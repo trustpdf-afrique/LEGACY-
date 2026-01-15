@@ -2,74 +2,134 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-
-<!-- 🔒 ZOOM DÉSACTIVÉ -->
-<meta name="viewport" 
-content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Bloc Notes Historique - Zakaria TV</title>
 
 <style>
-html, body {
-  touch-action: manipulation;
-  overscroll-behavior: none;
+:root {
+  --color-nord:#ffe0b2;
+  --color-ouest:#c8e6c9;
+  --color-centrale:#bbdefb;
+  --color-est:#e1bee7;
+  --color-sud:#ffccbc;
+  --color-femmes:#fff9c4;
+  --color-royaumes:#d7ccc8;
+  --color-revolutions:#ffcdd2;
+  --color-decolonisation:#cfd8dc;
+  --color-esclavage:#b0bec5;
+  
+  --bg-light:#f4f6f8;
+  --bg-dark:#1c1c1c;
+  --text-light:#111;
+  --text-dark:#f0f0f0;
 }
 
-body{
-  font-family: Arial, sans-serif;
+body {
+  height:100%;
   margin:0;
-  background:#f4f6f8;
+  font-family:Arial, sans-serif;
+  background: var(--bg-light);
+  color: var(--text-light);
+  touch-action: manipulation;
+  overscroll-behavior: none;
+  transition: background 0.3s, color 0.3s;
 }
-header{
+
+body.dark-mode {
+  background: var(--bg-dark);
+  color: var(--text-dark);
+}
+
+header {
   background:#111;
-  color:#fff;
+  color:white;
   text-align:center;
   padding:15px;
 }
-.container{padding:15px;}
-.region{
-  margin-bottom:20px;
-  padding:15px;
-  border-radius:12px;
-}
-.nord{background:#ffe0b2;}
-.ouest{background:#c8e6c9;}
-.centrale{background:#bbdefb;}
-.est{background:#e1bee7;}
-.sud{background:#ffccbc;}
 
-.country{
-  background:#fff;
-  margin:6px 0;
-  padding:10px;
-  border-radius:8px;
+.container {
+  padding:12px;
+}
+
+.region {
+  margin-bottom:18px;
+  padding:15px;
+  border-radius:14px;
+}
+
+.country {
+  background:white;
+  padding:12px;
+  margin:7px 0;
+  border-radius:10px;
   font-weight:bold;
   cursor:pointer;
+  transition: background 0.2s;
 }
-.country:hover{background:#ddd;}
+.country:hover {
+  background:#e0e0e0;
+}
 
-#pageCountry{display:none;}
+/* couleurs par région */
+.nord{background:var(--color-nord);}
+.ouest{background:var(--color-ouest);}
+.centrale{background:var(--color-centrale);}
+.est{background:var(--color-est);}
+.sud{background:var(--color-sud);}
+.hist1{background:var(--color-femmes);}
+.hist2{background:var(--color-royaumes);}
+.hist3{background:var(--color-revolutions);}
+.hist4{background:var(--color-decolonisation);}
+.hist5{background:var(--color-esclavage);}
 
-textarea{
+/* PAGE ÉCRITURE */
+#pageCountry {
+  display:none;
+  height: calc(100vh - 70px);
+  display:flex;
+  flex-direction: column;
+}
+
+#pageCountry h2 {
+  text-align:center;
+  margin:5px 0 10px 0;
+}
+
+textarea {
+  flex:1;
   width:100%;
-  height:240px;
-  margin-top:10px;
-  padding:10px;
-  font-size:15px;
+  border-radius:14px;
+  border:none;
+  padding:16px;
+  font-size:17px;
+  line-height:1.6;
+  resize:none;
+  outline:none;
+  box-shadow:0 0 10px rgba(0,0,0,0.08);
+  overflow-y:scroll;
+  scroll-behavior:smooth;
+  transition: background 0.3s, color 0.3s;
 }
 
-button{
-  margin-top:12px;
-  padding:10px 15px;
-  font-size:16px;
+body.dark-mode textarea {
+  background:#333;
+  color:#f0f0f0;
+}
+
+button {
+  margin-top:10px;
+  width:100%;
+  padding:14px;
+  font-size:17px;
   border:none;
-  border-radius:10px;
+  border-radius:14px;
   cursor:pointer;
+  transition: background 0.3s, color 0.3s;
 }
-.back{
-  background:#000;
-  color:#fff;
-}
+
+.back {background:#000; color:white;}
+.toggle-theme {background:#555; color:white; margin-bottom:10px;}
+#search {padding:10px; width:100%; margin-bottom:10px; border-radius:10px; border:1px solid #aaa;}
 </style>
 </head>
 
@@ -82,114 +142,143 @@ button{
 
 <div class="container" id="home">
 
+<input type="text" id="search" placeholder="🔍 Rechercher un pays ou thème" oninput="filterItems()">
+<button class="toggle-theme" onclick="toggleTheme()">🌙 Mode Sombre / Clair</button>
+
 <!-- AFRIQUE DU NORD -->
 <div class="region nord">
 <h2>🌍 Afrique du Nord</h2>
-<div class="country" onclick="openItem('Algérie')">Algérie</div>
-<div class="country" onclick="openItem('Égypte')">Égypte</div>
-<div class="country" onclick="openItem('Libye')">Libye</div>
-<div class="country" onclick="openItem('Maroc')">Maroc</div>
-<div class="country" onclick="openItem('Mauritanie')">Mauritanie</div>
-<div class="country" onclick="openItem('Soudan')">Soudan</div>
-<div class="country" onclick="openItem('Tunisie')">Tunisie</div>
+<div class="country">Algérie</div>
+<div class="country">Égypte</div>
+<div class="country">Libye</div>
+<div class="country">Maroc</div>
+<div class="country">Mauritanie</div>
+<div class="country">Soudan</div>
+<div class="country">Tunisie</div>
 </div>
 
 <!-- AFRIQUE DE L’OUEST -->
 <div class="region ouest">
 <h2>🌍 Afrique de l’Ouest</h2>
-<div class="country" onclick="openItem('Bénin')">Bénin</div>
-<div class="country" onclick="openItem('Burkina Faso')">Burkina Faso</div>
-<div class="country" onclick="openItem('Cap-Vert')">Cap-Vert</div>
-<div class="country" onclick="openItem('Côte d’Ivoire')">Côte d’Ivoire</div>
-<div class="country" onclick="openItem('Gambie')">Gambie</div>
-<div class="country" onclick="openItem('Ghana')">Ghana</div>
-<div class="country" onclick="openItem('Guinée')">Guinée</div>
-<div class="country" onclick="openItem('Guinée-Bissau')">Guinée-Bissau</div>
-<div class="country" onclick="openItem('Liberia')">Liberia</div>
-<div class="country" onclick="openItem('Mali')">Mali</div>
-<div class="country" onclick="openItem('Niger')">Niger</div>
-<div class="country" onclick="openItem('Nigeria')">Nigeria</div>
-<div class="country" onclick="openItem('Sénégal')">Sénégal</div>
-<div class="country" onclick="openItem('Sierra Leone')">Sierra Leone</div>
-<div class="country" onclick="openItem('Togo')">Togo</div>
+<div class="country">Bénin</div>
+<div class="country">Burkina Faso</div>
+<div class="country">Cap-Vert</div>
+<div class="country">Côte d’Ivoire</div>
+<div class="country">Gambie</div>
+<div class="country">Ghana</div>
+<div class="country">Guinée</div>
+<div class="country">Guinée-Bissau</div>
+<div class="country">Liberia</div>
+<div class="country">Mali</div>
+<div class="country">Niger</div>
+<div class="country">Nigeria</div>
+<div class="country">Sénégal</div>
+<div class="country">Sierra Leone</div>
+<div class="country">Togo</div>
 </div>
 
 <!-- AFRIQUE CENTRALE -->
 <div class="region centrale">
 <h2>🌍 Afrique centrale</h2>
-<div class="country" onclick="openItem('Cameroun')">Cameroun</div>
-<div class="country" onclick="openItem('Gabon')">Gabon</div>
-<div class="country" onclick="openItem('République centrafricaine')">République centrafricaine</div>
-<div class="country" onclick="openItem('RDC')">République démocratique du Congo</div>
-<div class="country" onclick="openItem('République du Congo')">République du Congo</div>
-<div class="country" onclick="openItem('Tchad')">Tchad</div>
+<div class="country">Cameroun</div>
+<div class="country">Gabon</div>
+<div class="country">République centrafricaine</div>
+<div class="country">RDC</div>
+<div class="country">République du Congo</div>
+<div class="country">Tchad</div>
 </div>
 
 <!-- AFRIQUE DE L’EST -->
 <div class="region est">
 <h2>🌍 Afrique de l’Est</h2>
-<div class="country" onclick="openItem('Burundi')">Burundi</div>
-<div class="country" onclick="openItem('Djibouti')">Djibouti</div>
-<div class="country" onclick="openItem('Érythrée')">Érythrée</div>
-<div class="country" onclick="openItem('Éthiopie')">Éthiopie</div>
-<div class="country" onclick="openItem('Ouganda')">Ouganda</div>
-<div class="country" onclick="openItem('Rwanda')">Rwanda</div>
-<div class="country" onclick="openItem('Somalie')">Somalie</div>
-<div class="country" onclick="openItem('Soudan du Sud')">Soudan du Sud</div>
-<div class="country" onclick="openItem('Tanzanie')">Tanzanie</div>
+<div class="country">Burundi</div>
+<div class="country">Djibouti</div>
+<div class="country">Érythrée</div>
+<div class="country">Éthiopie</div>
+<div class="country">Ouganda</div>
+<div class="country">Rwanda</div>
+<div class="country">Somalie</div>
+<div class="country">Soudan du Sud</div>
+<div class="country">Tanzanie</div>
 </div>
 
 <!-- AFRIQUE AUSTRALE -->
 <div class="region sud">
 <h2>🌍 Afrique australe</h2>
-<div class="country" onclick="openItem('Afrique du Sud')">Afrique du Sud</div>
-<div class="country" onclick="openItem('Angola')">Angola</div>
-<div class="country" onclick="openItem('Comores')">Comores</div>
-<div class="country" onclick="openItem('Madagascar')">Madagascar</div>
-<div class="country" onclick="openItem('Maurice')">Maurice</div>
-<div class="country" onclick="openItem('Mozambique')">Mozambique</div>
-<div class="country" onclick="openItem('Namibie')">Namibie</div>
-<div class="country" onclick="openItem('Eswatini')">Swaziland (Eswatini)</div>
-<div class="country" onclick="openItem('Zambie')">Zambie</div>
-<div class="country" onclick="openItem('Zimbabwe')">Zimbabwe</div>
+<div class="country">Afrique du Sud</div>
+<div class="country">Angola</div>
+<div class="country">Comores</div>
+<div class="country">Madagascar</div>
+<div class="country">Maurice</div>
+<div class="country">Mozambique</div>
+<div class="country">Namibie</div>
+<div class="country">Eswatini</div>
+<div class="country">Zambie</div>
+<div class="country">Zimbabwe</div>
 </div>
+
+<!-- THÈMES HISTORIQUES -->
+<div class="region hist1"><h2>👩🏾‍🦱 Les Femmes</h2><div class="country">Femmes africaines</div></div>
+<div class="region hist2"><h2>🏰 Royaumes et Empires africains</h2><div class="country">Royaumes & Empires</div></div>
+<div class="region hist3"><h2>🔥 Les Révolutions</h2><div class="country">Révolutions africaines</div></div>
+<div class="region hist4"><h2>🕊️ La Décolonisation</h2><div class="country">Décolonisation</div></div>
+<div class="region hist5"><h2>⛓️ L’esclavage</h2><div class="country">Esclavage</div></div>
 
 </div>
 
 <!-- PAGE NOTES -->
 <div class="container" id="pageCountry">
 <h2 id="title"></h2>
-<p>✍️ Notes (sauvegarde automatique 💾)</p>
-<textarea id="notes"></textarea>
+<textarea id="notes" placeholder="✍️ Écris ici ton histoire… scroll fluide, joli, mode sombre disponible 💾"></textarea>
 <button class="back" onclick="goBack()">⬅ Retour</button>
 </div>
 
 <script>
-/* 🚫 Bloque le double-tap zoom */
 let lastTouchEnd = 0;
-document.addEventListener('touchend', function (event) {
-  let now = (new Date()).getTime();
-  if (now - lastTouchEnd <= 300) {
-    event.preventDefault();
-  }
+document.addEventListener('touchend', function(event){
+  let now = Date.now();
+  if(now - lastTouchEnd <= 300) event.preventDefault();
   lastTouchEnd = now;
 }, false);
 
-let currentKey="";
-function openItem(name){
-  document.getElementById("home").style.display="none";
-  document.getElementById("pageCountry").style.display="block";
-  document.getElementById("title").innerText="📜 "+name;
-  currentKey="zakaria_tv_"+name;
-  document.getElementById("notes").value=
-    localStorage.getItem(currentKey)||"";
-}
-document.getElementById("notes").addEventListener("input",function(){
+let currentKey = "";
+
+// ouverture de note
+document.querySelectorAll('.country').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    document.getElementById('home').style.display='none';
+    document.getElementById('pageCountry').style.display='flex';
+    let name = item.innerText;
+    document.getElementById('title').innerText="📜 "+name;
+    currentKey="zakaria_tv_"+name;
+    document.getElementById('notes').value=localStorage.getItem(currentKey)||"";
+  });
+});
+
+document.getElementById('notes').addEventListener('input', function(){
   localStorage.setItem(currentKey,this.value);
 });
+
 function goBack(){
-  document.getElementById("pageCountry").style.display="none";
-  document.getElementById("home").style.display="block";
+  document.getElementById('pageCountry').style.display='none';
+  document.getElementById('home').style.display='block';
+}
+
+// Mode sombre
+function toggleTheme(){
+  document.body.classList.toggle('dark-mode');
+}
+
+// Recherche instantanée
+function filterItems(){
+  let filter = document.getElementById('search').value.toLowerCase();
+  document.querySelectorAll('.country').forEach(item=>{
+    if(item.innerText.toLowerCase().includes(filter)){
+      item.style.display='block';
+    }else{
+      item.style.display='none';
+    }
+  });
 }
 </script>
 
