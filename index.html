@@ -1,205 +1,197 @@
-<!DOCTYPE html><html lang="fr">
+<!DOCTYPE html>
+<html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bloc-notes Zakaria TV</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
-    header { background: #ff6600; color: white; padding: 20px; text-align: center; }
-    #main { display: flex; height: calc(100vh - 80px); }
-    #sidebar { width: 250px; overflow-y: auto; padding: 10px; }
-    #sidebar h2 { cursor: pointer; padding: 8px; border-radius: 5px; margin: 5px 0; color: white; }
-    #sidebar ul { list-style: none; padding-left: 10px; margin: 0; }
-    #sidebar li { cursor: pointer; padding: 5px; border-radius: 3px; margin: 3px 0; color: white; }
-    #sidebar li:hover { opacity: 0.8; }
-    #content { flex: 1; padding: 20px; overflow-y: auto; }
-    #content h2 { margin-top: 0; }
-    input, textarea, select, button { width: 100%; margin: 5px 0; padding: 8px; }
-    .story { background: #fff; padding: 10px; margin-bottom: 10px; border-radius: 5px; position: relative; }
-    .tag { background: #ff6600; color: white; padding: 2px 5px; border-radius: 3px; margin-left: 5px; font-size: 12px; }
-    .story button { position: absolute; right: 10px; top: 10px; background: #0077b6; color: white; border: none; padding: 3px 6px; border-radius: 3px; cursor: pointer; margin-left: 5px; }
-    .story button:hover { opacity: 0.8; }/* Couleurs par région */
-#afnord h2, #afnord li { background-color: #0077b6; }
-#afouest h2, #afouest li { background-color: #009688; }
-#afcent h2, #afcent li { background-color: #8e44ad; }
-#afeast h2, #afeast li { background-color: #f39c12; }
-#afsouth h2, #afsouth li { background-color: #e74c3c; }
+<meta charset="UTF-8">
 
-  </style>
+<!-- 🔒 ZOOM DÉSACTIVÉ -->
+<meta name="viewport" 
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Bloc Notes Historique - Zakaria TV</title>
+
+<style>
+html, body {
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+body{
+  font-family: Arial, sans-serif;
+  margin:0;
+  background:#f4f6f8;
+}
+header{
+  background:#111;
+  color:#fff;
+  text-align:center;
+  padding:15px;
+}
+.container{padding:15px;}
+.region{
+  margin-bottom:20px;
+  padding:15px;
+  border-radius:12px;
+}
+.nord{background:#ffe0b2;}
+.ouest{background:#c8e6c9;}
+.centrale{background:#bbdefb;}
+.est{background:#e1bee7;}
+.sud{background:#ffccbc;}
+
+.country{
+  background:#fff;
+  margin:6px 0;
+  padding:10px;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.country:hover{background:#ddd;}
+
+#pageCountry{display:none;}
+
+textarea{
+  width:100%;
+  height:240px;
+  margin-top:10px;
+  padding:10px;
+  font-size:15px;
+}
+
+button{
+  margin-top:12px;
+  padding:10px 15px;
+  font-size:16px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+.back{
+  background:#000;
+  color:#fff;
+}
+</style>
 </head>
-<body><header>
-  <h1>Bloc-notes Zakaria TV</h1>
-</header><div id="main">
-  <div id="sidebar">
-    <input type="text" id="searchSidebar" placeholder="Rechercher un pays" onkeyup="searchCountries()"><h2 onclick="toggleSection('afnord')">Afrique du Nord</h2>
-<ul id="afnord">
-  <li>Algérie</li>
-  <li>Égypte</li>
-  <li>Libye</li>
-  <li>Maroc</li>
-  <li>Mauritanie</li>
-  <li>Soudan</li>
-  <li>Tunisie</li>
-</ul>
 
-<h2 onclick="toggleSection('afouest')">Afrique de l'Ouest</h2>
-<ul id="afouest">
-  <li>Bénin</li>
-  <li>Burkina Faso</li>
-  <li>Cap-Vert</li>
-  <li>Côte d’Ivoire</li>
-  <li>Gambie</li>
-  <li>Ghana</li>
-  <li>Guinée</li>
-  <li>Guinée-Bissau</li>
-  <li>Liberia</li>
-  <li>Mali</li>
-  <li>Niger</li>
-  <li>Nigeria</li>
-  <li>Sénégal</li>
-  <li>Sierra Leone</li>
-  <li>Togo</li>
-</ul>
+<body>
 
-<h2 onclick="toggleSection('afcent')">Afrique centrale</h2>
-<ul id="afcent">
-  <li>Cameroun</li>
-  <li>Gabon</li>
-  <li>République centrafricaine</li>
-  <li>République démocratique du Congo</li>
-  <li>République du Congo</li>
-  <li>Tchad</li>
-</ul>
+<header>
+  <h1>📓 Bloc Notes Historique</h1>
+  <p>Zakaria TV 🎥🌍</p>
+</header>
 
-<h2 onclick="toggleSection('afeast')">Afrique de l'Est</h2>
-<ul id="afeast">
-  <li>Burundi</li>
-  <li>Djibouti</li>
-  <li>Érythrée</li>
-  <li>Éthiopie</li>
-  <li>Ouganda</li>
-  <li>Rwanda</li>
-  <li>Somalie</li>
-  <li>Soudan du Sud</li>
-  <li>Tanzanie</li>
-</ul>
+<div class="container" id="home">
 
-<h2 onclick="toggleSection('afsouth')">Afrique australe</h2>
-<ul id="afsouth">
-  <li>Afrique du Sud</li>
-  <li>Angola</li>
-  <li>Comores</li>
-  <li>Madagascar</li>
-  <li>Maurice</li>
-  <li>Mozambique</li>
-  <li>Namibie</li>
-  <li>Swaziland</li>
-  <li>Zambie</li>
-  <li>Zimbabwe</li>
-</ul>
+<!-- AFRIQUE DU NORD -->
+<div class="region nord">
+<h2>🌍 Afrique du Nord</h2>
+<div class="country" onclick="openItem('Algérie')">Algérie</div>
+<div class="country" onclick="openItem('Égypte')">Égypte</div>
+<div class="country" onclick="openItem('Libye')">Libye</div>
+<div class="country" onclick="openItem('Maroc')">Maroc</div>
+<div class="country" onclick="openItem('Mauritanie')">Mauritanie</div>
+<div class="country" onclick="openItem('Soudan')">Soudan</div>
+<div class="country" onclick="openItem('Tunisie')">Tunisie</div>
+</div>
 
-  </div>  <div id="content">
-    <h2>Ajouter une histoire</h2>
-    <select id="region">
-      <option value="afnord">Afrique du Nord</option>
-      <option value="afouest">Afrique de l'Ouest</option>
-      <option value="afcent">Afrique centrale</option>
-      <option value="afeast">Afrique de l'Est</option>
-      <option value="afsouth">Afrique australe</option>
-    </select>
-    <input type="text" id="country" placeholder="Nom du pays">
-    <input type="text" id="title" placeholder="Titre de l'histoire">
-    <input type="text" id="tag" placeholder="Tag (ex: Royaume, Femme, Décolonisation)">
-    <textarea id="story" placeholder="Écris ton histoire ici..."></textarea>
-    <button onclick="addStory()">Ajouter l'histoire</button>
-    <h2>Histoires</h2>
-    <div id="stories"></div>
-  </div>
-</div><script>
-let storiesData = {};
-if(localStorage.getItem('zakariaStories')) {
-  storiesData = JSON.parse(localStorage.getItem('zakariaStories'));
-  renderSidebar();
-}
+<!-- AFRIQUE DE L’OUEST -->
+<div class="region ouest">
+<h2>🌍 Afrique de l’Ouest</h2>
+<div class="country" onclick="openItem('Bénin')">Bénin</div>
+<div class="country" onclick="openItem('Burkina Faso')">Burkina Faso</div>
+<div class="country" onclick="openItem('Cap-Vert')">Cap-Vert</div>
+<div class="country" onclick="openItem('Côte d’Ivoire')">Côte d’Ivoire</div>
+<div class="country" onclick="openItem('Gambie')">Gambie</div>
+<div class="country" onclick="openItem('Ghana')">Ghana</div>
+<div class="country" onclick="openItem('Guinée')">Guinée</div>
+<div class="country" onclick="openItem('Guinée-Bissau')">Guinée-Bissau</div>
+<div class="country" onclick="openItem('Liberia')">Liberia</div>
+<div class="country" onclick="openItem('Mali')">Mali</div>
+<div class="country" onclick="openItem('Niger')">Niger</div>
+<div class="country" onclick="openItem('Nigeria')">Nigeria</div>
+<div class="country" onclick="openItem('Sénégal')">Sénégal</div>
+<div class="country" onclick="openItem('Sierra Leone')">Sierra Leone</div>
+<div class="country" onclick="openItem('Togo')">Togo</div>
+</div>
 
-function toggleSection(id){
-  const ul = document.getElementById(id);
-  ul.style.display = ul.style.display === 'none' ? 'block' : 'block';
-}
+<!-- AFRIQUE CENTRALE -->
+<div class="region centrale">
+<h2>🌍 Afrique centrale</h2>
+<div class="country" onclick="openItem('Cameroun')">Cameroun</div>
+<div class="country" onclick="openItem('Gabon')">Gabon</div>
+<div class="country" onclick="openItem('République centrafricaine')">République centrafricaine</div>
+<div class="country" onclick="openItem('RDC')">République démocratique du Congo</div>
+<div class="country" onclick="openItem('République du Congo')">République du Congo</div>
+<div class="country" onclick="openItem('Tchad')">Tchad</div>
+</div>
 
-function searchCountries(){
-  const input = document.getElementById('searchSidebar').value.toLowerCase();
-  ['afnord','afouest','afcent','afeast','afsouth'].forEach(region => {
-    const ul = document.getElementById(region);
-    ul.querySelectorAll('li').forEach(li => {
-      li.style.display = li.textContent.toLowerCase().includes(input) ? 'block' : 'none';
-    });
-  });
-}
+<!-- AFRIQUE DE L’EST -->
+<div class="region est">
+<h2>🌍 Afrique de l’Est</h2>
+<div class="country" onclick="openItem('Burundi')">Burundi</div>
+<div class="country" onclick="openItem('Djibouti')">Djibouti</div>
+<div class="country" onclick="openItem('Érythrée')">Érythrée</div>
+<div class="country" onclick="openItem('Éthiopie')">Éthiopie</div>
+<div class="country" onclick="openItem('Ouganda')">Ouganda</div>
+<div class="country" onclick="openItem('Rwanda')">Rwanda</div>
+<div class="country" onclick="openItem('Somalie')">Somalie</div>
+<div class="country" onclick="openItem('Soudan du Sud')">Soudan du Sud</div>
+<div class="country" onclick="openItem('Tanzanie')">Tanzanie</div>
+</div>
 
-function addStory(){
-  const region = document.getElementById('region').value;
-  const country = document.getElementById('country').value.trim();
-  const title = document.getElementById('title').value.trim();
-  const tag = document.getElementById('tag').value.trim();
-  const storyText = document.getElementById('story').value.trim();
+<!-- AFRIQUE AUSTRALE -->
+<div class="region sud">
+<h2>🌍 Afrique australe</h2>
+<div class="country" onclick="openItem('Afrique du Sud')">Afrique du Sud</div>
+<div class="country" onclick="openItem('Angola')">Angola</div>
+<div class="country" onclick="openItem('Comores')">Comores</div>
+<div class="country" onclick="openItem('Madagascar')">Madagascar</div>
+<div class="country" onclick="openItem('Maurice')">Maurice</div>
+<div class="country" onclick="openItem('Mozambique')">Mozambique</div>
+<div class="country" onclick="openItem('Namibie')">Namibie</div>
+<div class="country" onclick="openItem('Eswatini')">Swaziland (Eswatini)</div>
+<div class="country" onclick="openItem('Zambie')">Zambie</div>
+<div class="country" onclick="openItem('Zimbabwe')">Zimbabwe</div>
+</div>
 
-  if(!country || !title || !storyText) { alert('Remplis tous les champs !'); return; }
+</div>
 
-  if(!storiesData[region]) storiesData[region] = {};
-  if(!storiesData[region][country]) storiesData[region][country] = [];
+<!-- PAGE NOTES -->
+<div class="container" id="pageCountry">
+<h2 id="title"></h2>
+<p>✍️ Notes (sauvegarde automatique 💾)</p>
+<textarea id="notes"></textarea>
+<button class="back" onclick="goBack()">⬅ Retour</button>
+</div>
 
-  storiesData[region][country].push({title, tag, storyText});
-  localStorage.setItem('zakariaStories', JSON.stringify(storiesData));
-  renderSidebar();
-  renderStories(region, country);
-  document.getElementById('country').value = '';
-  document.getElementById('title').value = '';
-  document.getElementById('tag').value = '';
-  document.getElementById('story').value = '';
-}
-
-function renderSidebar(){
-  ['afnord','afouest','afcent','afeast','afsouth'].forEach(region => {
-    const ul = document.getElementById(region);
-    ul.querySelectorAll('li').forEach(li => {
-      li.onclick = () => renderStories(region, li.textContent);
-    });
-  });
-}
-
-function renderStories(region, country){
-  const container = document.getElementById('stories');
-  container.innerHTML = `<h3>${country}</h3>`;
-  if(storiesData[region] && storiesData[region][country]){
-    storiesData[region][country].forEach((s,i) => {
-      const div = document.createElement('div');
-      div.className = 'story';
-      div.innerHTML = `<strong>${i+1} - ${s.title}</strong> <span class='tag'>${s.tag}</span><p>${s.storyText}</p>
-      <button onclick='editStory("${region}", "${country}", ${i})'>Modifier</button>
-      <button onclick='deleteStory("${region}", "${country}", ${i})'>Supprimer</button>`;
-      container.appendChild(div);
-    });
+<script>
+/* 🚫 Bloque le double-tap zoom */
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function (event) {
+  let now = (new Date()).getTime();
+  if (now - lastTouchEnd <= 300) {
+    event.preventDefault();
   }
-}
+  lastTouchEnd = now;
+}, false);
 
-function editStory(region, country, index){
-  const story = storiesData[region][country][index];
-  document.getElementById('country').value = country;
-  document.getElementById('title').value = story.title;
-  document.getElementById('tag').value = story.tag;
-  document.getElementById('story').value = story.storyText;
-  storiesData[region][country].splice(index,1);
-  localStorage.setItem('zakariaStories', JSON.stringify(storiesData));
-  renderStories(region, country);
+let currentKey="";
+function openItem(name){
+  document.getElementById("home").style.display="none";
+  document.getElementById("pageCountry").style.display="block";
+  document.getElementById("title").innerText="📜 "+name;
+  currentKey="zakaria_tv_"+name;
+  document.getElementById("notes").value=
+    localStorage.getItem(currentKey)||"";
 }
+document.getElementById("notes").addEventListener("input",function(){
+  localStorage.setItem(currentKey,this.value);
+});
+function goBack(){
+  document.getElementById("pageCountry").style.display="none";
+  document.getElementById("home").style.display="block";
+}
+</script>
 
-function deleteStory(region, country, index){
-  if(confirm('Supprimer cette histoire ?')){
-    storiesData[region][country].splice(index,1);
-    localStorage.setItem('zakariaStories', JSON.stringify(storiesData));
-    renderStories(region, country);
-  }
-}
-</script></body>
-  </html>
+</body>
+</html>
