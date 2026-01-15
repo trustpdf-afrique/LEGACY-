@@ -1,0 +1,185 @@
+<!DOCTYPE html><html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bloc-notes Zakaria TV</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f4f4f4; margin:0; padding:0; }
+header { background: #ff6600; color:white; padding:20px; text-align:center; }
+#main, #countryPage { display:flex; height:calc(100vh - 80px); }
+#sidebar, #countrySidebar { width:250px; overflow-y:auto; padding:10px; }
+#content, #countryContent { flex:1; padding:20px; overflow-y:auto; }
+#content h2, #countryContent h2 { margin-top:0; }
+input, textarea, select, button { width:100%; margin:5px 0; padding:8px; }
+.story { background:#fff; padding:10px; margin-bottom:10px; border-radius:5px; position:relative; }
+.tag { background:#ff6600; color:white; padding:2px 5px; border-radius:3px; margin-left:5px; font-size:12px; }
+.story button { position:absolute; right:10px; top:10px; background:#0077b6; color:white; border:none; padding:3px 6px; border-radius:3px; cursor:pointer; margin-left:5px; }
+.story button:hover { opacity:0.8; }
+.hidden { display:none; }
+#searchSidebar { margin-bottom:10px; padding:5px; }
+</style>
+</head>
+<body><header>
+<h1>Bloc-notes Zakaria TV</h1>
+</header><div id="main">
+  <div id="sidebar">
+    <input type="text" id="searchSidebar" placeholder="Rechercher un pays" onkeyup="searchCountries()"><h2>Afrique du Nord</h2>
+<ul>
+  <li onclick="openCountryPage('afnord','Algérie')">Algérie</li>
+  <li onclick="openCountryPage('afnord','Égypte')">Égypte</li>
+  <li onclick="openCountryPage('afnord','Libye')">Libye</li>
+  <li onclick="openCountryPage('afnord','Maroc')">Maroc</li>
+  <li onclick="openCountryPage('afnord','Mauritanie')">Mauritanie</li>
+  <li onclick="openCountryPage('afnord','Soudan')">Soudan</li>
+  <li onclick="openCountryPage('afnord','Tunisie')">Tunisie</li>
+</ul>
+
+<h2>Afrique de l'Ouest</h2>
+<ul>
+  <li onclick="openCountryPage('afouest','Bénin')">Bénin</li>
+  <li onclick="openCountryPage('afouest','Burkina Faso')">Burkina Faso</li>
+  <li onclick="openCountryPage('afouest','Cap-Vert')">Cap-Vert</li>
+  <li onclick="openCountryPage('afouest','Côte d’Ivoire')">Côte d’Ivoire</li>
+  <li onclick="openCountryPage('afouest','Gambie')">Gambie</li>
+  <li onclick="openCountryPage('afouest','Ghana')">Ghana</li>
+  <li onclick="openCountryPage('afouest','Guinée')">Guinée</li>
+  <li onclick="openCountryPage('afouest','Guinée-Bissau')">Guinée-Bissau</li>
+  <li onclick="openCountryPage('afouest','Liberia')">Liberia</li>
+  <li onclick="openCountryPage('afouest','Mali')">Mali</li>
+  <li onclick="openCountryPage('afouest','Niger')">Niger</li>
+  <li onclick="openCountryPage('afouest','Nigeria')">Nigeria</li>
+  <li onclick="openCountryPage('afouest','Sénégal')">Sénégal</li>
+  <li onclick="openCountryPage('afouest','Sierra Leone')">Sierra Leone</li>
+  <li onclick="openCountryPage('afouest','Togo')">Togo</li>
+</ul>
+
+<h2>Afrique centrale</h2>
+<ul>
+  <li onclick="openCountryPage('afcent','Cameroun')">Cameroun</li>
+  <li onclick="openCountryPage('afcent','Gabon')">Gabon</li>
+  <li onclick="openCountryPage('afcent','République centrafricaine')">République centrafricaine</li>
+  <li onclick="openCountryPage('afcent','République démocratique du Congo')">République démocratique du Congo</li>
+  <li onclick="openCountryPage('afcent','République du Congo')">République du Congo</li>
+  <li onclick="openCountryPage('afcent','Tchad')">Tchad</li>
+</ul>
+
+<h2>Afrique de l'Est</h2>
+<ul>
+  <li onclick="openCountryPage('afeast','Burundi')">Burundi</li>
+  <li onclick="openCountryPage('afeast','Djibouti')">Djibouti</li>
+  <li onclick="openCountryPage('afeast','Érythrée')">Érythrée</li>
+  <li onclick="openCountryPage('afeast','Éthiopie')">Éthiopie</li>
+  <li onclick="openCountryPage('afeast','Ouganda')">Ouganda</li>
+  <li onclick="openCountryPage('afeast','Rwanda')">Rwanda</li>
+  <li onclick="openCountryPage('afeast','Somalie')">Somalie</li>
+  <li onclick="openCountryPage('afeast','Soudan du Sud')">Soudan du Sud</li>
+  <li onclick="openCountryPage('afeast','Tanzanie')">Tanzanie</li>
+</ul>
+
+<h2>Afrique australe</h2>
+<ul>
+  <li onclick="openCountryPage('afsouth','Afrique du Sud')">Afrique du Sud</li>
+  <li onclick="openCountryPage('afsouth','Angola')">Angola</li>
+  <li onclick="openCountryPage('afsouth','Comores')">Comores</li>
+  <li onclick="openCountryPage('afsouth','Madagascar')">Madagascar</li>
+  <li onclick="openCountryPage('afsouth','Maurice')">Maurice</li>
+  <li onclick="openCountryPage('afsouth','Mozambique')">Mozambique</li>
+  <li onclick="openCountryPage('afsouth','Namibie')">Namibie</li>
+  <li onclick="openCountryPage('afsouth','Swaziland')">Swaziland</li>
+  <li onclick="openCountryPage('afsouth','Zambie')">Zambie</li>
+  <li onclick="openCountryPage('afsouth','Zimbabwe')">Zimbabwe</li>
+</ul>
+
+  </div>  <div id="countryPage" class="hidden">
+    <div id="countrySidebar"></div>
+    <div id="countryContent">
+      <button onclick="backToMain()">← Retour</button>
+      <h2 id="countryTitle"></h2>
+      <input type="text" id="title" placeholder="Titre de l'histoire">
+      <input type="text" id="tag" placeholder="Tag (ex: Royaume, Femme, Décolonisation)">
+      <textarea id="story" placeholder="Écris ton histoire ici..."></textarea>
+      <button onclick="addCountryStory()">Ajouter l'histoire</button>
+      <div id="stories"></div>
+    </div>
+  </div>
+</div><script>
+let storiesData = {};
+let currentCountry = '';
+let currentRegion = '';
+if(localStorage.getItem('zakariaStories')) {
+  storiesData = JSON.parse(localStorage.getItem('zakariaStories'));
+}
+
+function searchCountries(){
+  const input = document.getElementById('searchSidebar').value.toLowerCase();
+  document.querySelectorAll('#sidebar li').forEach(li => {
+    li.style.display = li.textContent.toLowerCase().includes(input) ? 'block' : 'none';
+  });
+}
+
+function openCountryPage(region,country){
+  currentRegion = region;
+  currentCountry = country;
+  document.getElementById('main').classList.add('hidden');
+  document.getElementById('countryPage').classList.remove('hidden');
+  document.getElementById('countryTitle').innerText = country;
+  renderStories();
+}
+
+function backToMain(){
+  document.getElementById('main').classList.remove('hidden');
+  document.getElementById('countryPage').classList.add('hidden');
+  document.getElementById('title').value='';
+  document.getElementById('tag').value='';
+  document.getElementById('story').value='';
+}
+
+function addCountryStory(){
+  const title = document.getElementById('title').value.trim();
+  const tag = document.getElementById('tag').value.trim();
+  const storyText = document.getElementById('story').value.trim();
+  if(!title || !storyText){ alert('Remplis tous les champs !'); return; }
+  if(!storiesData[currentRegion]) storiesData[currentRegion]={};
+  if(!storiesData[currentRegion][currentCountry]) storiesData[currentRegion][currentCountry]=[];
+  storiesData[currentRegion][currentCountry].push({title,tag,storyText});
+  localStorage.setItem('zakariaStories',JSON.stringify(storiesData));
+  document.getElementById('title').value='';
+  document.getElementById('tag').value='';
+  document.getElementById('story').value='';
+  renderStories();
+}
+
+function renderStories(){
+  const container = document.getElementById('stories');
+  container.innerHTML='';
+  if(storiesData[currentRegion] && storiesData[currentRegion][currentCountry]){
+    storiesData[currentRegion][currentCountry].forEach((s,i)=>{
+      const div = document.createElement('div');
+      div.className='story';
+      div.innerHTML=`<strong>${i+1} - ${s.title}</strong> <span class='tag'>${s.tag}</span><p>${s.storyText}</p>
+      <button onclick='editStory(${i})'>Modifier</button>
+      <button onclick='deleteStory(${i})'>Supprimer</button>`;
+      container.appendChild(div);
+    });
+  }
+}
+
+function editStory(index){
+  const s = storiesData[currentRegion][currentCountry][index];
+  document.getElementById('title').value=s.title;
+  document.getElementById('tag').value=s.tag;
+  document.getElementById('story').value=s.storyText;
+  storiesData[currentRegion][currentCountry].splice(index,1);
+  localStorage.setItem('zakariaStories',JSON.stringify(storiesData));
+  renderStories();
+}
+
+function deleteStory(index){
+  if(confirm('Supprimer cette histoire ?')){
+    storiesData[currentRegion][currentCountry].splice(index,1);
+    localStorage.setItem('zakariaStories',JSON.stringify(storiesData));
+    renderStories();
+  }
+}
+</script></body>
+  </html>
