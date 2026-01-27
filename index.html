@@ -82,7 +82,48 @@ header {
 .hist4{background:var(--color-decolonisation);}
 .hist5{background:var(--color-esclavage);}
 
-/* PAGE ÉCRITURE */
+/* PAGE SÉRIES */
+#pageSeries {
+  display:none;
+  flex-direction:column;
+  padding:20px;
+  height: calc(100vh - 70px);
+}
+
+#seriesTitle {
+  text-align:center;
+  font-size:28px;
+  margin-bottom:20px;
+}
+
+/* BOUTONS SERIES COLORÉS ET ANIMÉS */
+.series-btn {
+  font-size:26px;
+  font-weight:bold;
+  border:none;
+  border-radius:14px;
+  padding:20px;
+  margin:10px 0;
+  cursor:pointer;
+  color:white;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.series-btn:nth-child(1){background:#f44336;}  /* rouge */
+.series-btn:nth-child(2){background:#e91e63;}  /* rose */
+.series-btn:nth-child(3){background:#9c27b0;}  /* violet */
+.series-btn:nth-child(4){background:#3f51b5;}  /* bleu foncé */
+.series-btn:nth-child(5){background:#03a9f4;}  /* bleu clair */
+.series-btn:nth-child(6){background:#009688;}  /* vert bleu */
+.series-btn:nth-child(7){background:#4caf50;}  /* vert */
+.series-btn:nth-child(8){background:#ff9800;}  /* orange */
+.series-btn:nth-child(9){background:#795548;}  /* marron */
+.series-btn:nth-child(10){background:#607d8b;} /* gris bleu */
+.series-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* PAGE NOTES */
 #pageCountry {
   display:none;
   height: calc(100vh - 70px);
@@ -140,6 +181,7 @@ button {
   <p>Zakaria TV 🎥🌍</p>
 </header>
 
+<!-- PAGE PRINCIPALE -->
 <div class="container" id="home">
 
 <input type="text" id="search" placeholder="🔍 Rechercher un pays ou thème" oninput="filterItems()">
@@ -226,11 +268,35 @@ button {
 
 </div>
 
+<!-- PAGE SÉRIES -->
+<div class="container" id="pageSeries">
+<h2 id="seriesTitle"></h2>
+<div id="seriesButtons"></div>
+<button class="back" onclick="backToHome()">⬅ Retour</button>
+</div>
+
 <!-- PAGE NOTES -->
 <div class="container" id="pageCountry">
 <h2 id="title"></h2>
-<textarea id="notes" placeholder="✍️ Écris ici ton histoire… scroll fluide, joli, mode sombre disponible 💾"></textarea>
-<button class="back" onclick="goBack()">⬅ Retour</button>
+<button id="saveBtn" style="
+  background:#2196F3; 
+  color:white; 
+  border:none; 
+  border-radius:10px; 
+  padding:10px 15px; 
+  margin-bottom:10px; 
+  cursor:pointer;
+  font-weight:bold;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  transition: background 0.3s;
+">
+  <span id="saveIcon">💾</span> <span id="saveText">ENREGISTRER</span>
+</button>
+<textarea id="notes" placeholder="✍️ Écris ici ton histoire… scroll fluide, joli, mode sombre disponible"></textarea>
+<button class="back" onclick="backToSeries()">⬅ Retour</button>
 </div>
 
 <script>
@@ -242,26 +308,68 @@ document.addEventListener('touchend', function(event){
 }, false);
 
 let currentKey = "";
+let currentCountry = "";
 
-// ouverture de note
+// ouverture page série
 document.querySelectorAll('.country').forEach(item=>{
   item.addEventListener('click', ()=>{
+    currentCountry = item.innerText;
     document.getElementById('home').style.display='none';
-    document.getElementById('pageCountry').style.display='flex';
-    let name = item.innerText;
-    document.getElementById('title').innerText="📜 "+name;
-    currentKey="zakaria_tv_"+name;
-    document.getElementById('notes').value=localStorage.getItem(currentKey)||"";
+    document.getElementById('pageSeries').style.display='flex';
+    document.getElementById('seriesTitle').innerText = "📂 " + currentCountry;
+
+    let container = document.getElementById('seriesButtons');
+    container.innerHTML = "";
+    for(let i=1;i<=10;i++){
+      let btn = document.createElement('button');
+      btn.className = "series-btn";
+      btn.innerText = "SÉRIE " + i;
+      btn.addEventListener('click', ()=>{
+        openSeries(i);
+      });
+      container.appendChild(btn);
+    }
   });
 });
 
-document.getElementById('notes').addEventListener('input', function(){
-  localStorage.setItem(currentKey,this.value);
+// ouvrir page note pour série
+function openSeries(n){
+  document.getElementById('pageSeries').style.display='none';
+  document.getElementById('pageCountry').style.display='flex';
+  document.getElementById('title').innerText = "📜 " + currentCountry + " - SÉRIE " + n;
+  currentKey = "zakaria_tv_" + currentCountry + "_serie" + n;
+
+  let savedNote = localStorage.getItem(currentKey);
+  document.getElementById('notes').value = savedNote || "";
+}
+
+// bouton ENREGISTRER animé
+document.getElementById('saveBtn').addEventListener('click', function(){
+  localStorage.setItem(currentKey, document.getElementById('notes').value);
+
+  let saveBtn = document.getElementById('saveBtn');
+  let saveIcon = document.getElementById('saveIcon');
+  let saveText = document.getElementById('saveText');
+
+  saveIcon.textContent = '✅';
+  saveText.textContent = 'ENREGISTRÉ !';
+  saveBtn.style.background = '#4CAF50';
+
+  setTimeout(()=>{
+    saveIcon.textContent = '💾';
+    saveText.textContent = 'ENREGISTRER';
+    saveBtn.style.background = '#2196F3';
+  }, 2000);
 });
 
-function goBack(){
-  document.getElementById('pageCountry').style.display='none';
+function backToHome(){
+  document.getElementById('pageSeries').style.display='none';
   document.getElementById('home').style.display='block';
+}
+
+function backToSeries(){
+  document.getElementById('pageCountry').style.display='none';
+  document.getElementById('pageSeries').style.display='flex';
 }
 
 // Mode sombre
@@ -283,4 +391,4 @@ function filterItems(){
 </script>
 
 </body>
-</html>
+  </html>
