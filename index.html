@@ -51,6 +51,33 @@
       color: var(--white);
     }
 
+    /* TOAST BADGE DE CONFIRMATION ✅ */
+    .ztv-toast-badge {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #09A63D;
+      color: #FFFFFF;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 15px rgba(9, 166, 61, 0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 9999;
+    }
+
+    .ztv-toast-badge.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     /* CHÂSSIS APPLICATION MOBILE */
     .app-frame {
       width: 100%;
@@ -103,32 +130,6 @@
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* BADGE DE CONFIRMATION FLOOTTANT ✅ */
-    .toast-badge {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: #10B981;
-      color: #FFFFFF;
-      padding: 10px 20px;
-      border-radius: var(--radius-pill);
-      font-size: 13px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
-      z-index: 9999;
-      opacity: 0;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      pointer-events: none;
-    }
-    .toast-badge.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
     }
 
     /* LOGO & BRANDING */
@@ -332,13 +333,20 @@
     }
     .forgot-link:hover { color: var(--white); }
 
-    /* BOUTON FLOTTANT WHATSAPP */
+    /* BOUTON FLOTTANT WHATSAPP / ASSISTANT MODIFIÉ */
     .whatsapp-float-btn {
       position: fixed; bottom: 24px; right: 24px;
-      width: 56px; height: 56px; background: #25D366;
+      width: 58px; height: 58px; background: #25D366;
       border-radius: 50%; display: flex; align-items: center;
       justify-content: center; box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45);
       z-index: 1000; cursor: pointer; transition: var(--transition); text-decoration: none;
+      border: 2px solid #FFFFFF;
+      overflow: hidden;
+    }
+    .whatsapp-float-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     .whatsapp-float-btn:active { transform: scale(0.9); }
 
@@ -413,14 +421,13 @@
       margin: 0 16px 16px; color: #0F172A; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-card);
     }
     .prog-circle {
-      width: 58px; height: 58px; border-radius: 50%; border: 4px solid #09A63D;
+      width: 56px; height: 56px; border-radius: 50%; border: 5px solid #EF4444;
       display: flex; align-items: center; justify-content: center;
       font-weight: 900; font-size: 14px; color: #0F172A; flex-shrink: 0;
       transition: var(--transition);
-      background: #F8FAFC;
     }
     .prog-bar-bg { width: 100%; height: 8px; background: #E2E8F0; border-radius: 4px; overflow: hidden; margin-top: 6px; }
-    .prog-bar-fill { height: 100%; width: 0%; background: #09A63D; border-radius: 4px; transition: all 0.5s ease; }
+    .prog-bar-fill { height: 100%; width: 0%; background: #EF4444; border-radius: 4px; transition: all 0.5s ease; }
 
     .objective-banner {
       background: linear-gradient(135deg, #FF8C00, #D95300);
@@ -591,7 +598,7 @@
 
     .cert-badge-box {
       background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border: 1.5px solid #F59E0B;
-      border-radius: 12px; padding: 10px; display: flex; justify-space-around: align-items: center; margin: 14px 0; width: 100%;
+      border-radius: 12px; padding: 10px; display: flex; justify-content: space-around; align-items: center; margin: 14px 0; width: 100%;
     }
 
     .cert-badge-lbl { font-size: 9px; font-weight: 800; color: #92400E; text-transform: uppercase; }
@@ -626,7 +633,8 @@
       background: var(--bg-card); border: 1.5px solid var(--border-light);
       border-radius: var(--radius-xl); padding: 22px; width: 100%; max-width: 360px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-      max-height: 85vh; overflow-y: auto;
+      max-height: 85vh;
+      overflow-y: auto;
     }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px; }
     .modal-title { font-size: 15px; font-weight: 800; color: #FFF; display: flex; align-items: center; gap: 8px; }
@@ -734,10 +742,9 @@
 </head>
 <body>
 
-  <!-- BADGE DE CONFIRMATION ÉLÉGANT ✅ -->
-  <div id="toast-badge" class="toast-badge">
-    <span>✅</span>
-    <span id="toast-badge-text">Enregistré avec succès</span>
+  <!-- BADGE DE CONFIRMATION FLOOTTANT ✅ -->
+  <div id="ztv-toast" class="ztv-toast-badge">
+    <span id="ztv-toast-txt">✅ Enregistré</span>
   </div>
 
   <!-- CHÂSSIS APPLICATION -->
@@ -1024,7 +1031,7 @@
           <div style="display:flex; align-items:center; gap:12px;">
             <span style="font-size:28px;">🎯</span>
             <div>
-              <div style="font-size:13px; font-weight:900;">Moyenne d'orientation</div>
+              <div style="font-size:13px; font-weight:900;">Note d'orientation</div>
               <div style="font-size:10px; color:#A5B4FC; margin-top:2px;">Calculer ma moyenne d'orientation (3ᵉ)</div>
             </div>
           </div>
@@ -1050,21 +1057,19 @@
         </div>
       </div>
 
-      <!-- PROGRESSION GÉNÉRALE EN POURCENTAGE 📊 -->
       <div class="progression-card-ztv">
         <div class="prog-circle" id="circle-pct">0%</div>
         <div style="flex:1;">
           <div style="font-size: 12px; font-weight: 800; text-transform: uppercase;">Progression Générale</div>
-          <div style="font-size: 11px; color: #09A63D; font-weight: 700; margin-top:2px;" id="prog-desc">Renseignez vos moyennes par trimestre</div>
+          <div style="font-size: 11px; color: #64748B; margin-top:2px;" id="prog-desc">Renseignez vos moyennes par trimestre</div>
           <div class="prog-bar-bg"><div class="prog-bar-fill" id="bar-fill"></div></div>
         </div>
       </div>
 
-      <!-- OBJECTIF : PASSER EN CLASSE SUPÉRIEURE 🎯 -->
       <div class="objective-banner" onclick="openModalObjectif()">
         <div>
           <div style="font-size: 11px; font-weight: 800; text-transform: uppercase;">🎯 Objectif : Passer en classe supérieure</div>
-          <div style="font-size: 9.5px; opacity: 0.9; margin-top: 2px;">Voir les détails et conseils personnalisés</div>
+          <div style="font-size: 9px; opacity: 0.9;">Voir les détails et conseils personnalisés</div>
         </div>
         <div style="font-size:14px;">➔</div>
       </div>
@@ -1188,15 +1193,14 @@
               <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
               <td class="tot-cell">-</td>
             </tr>
-            <!-- NOUVELLES MATIÈRES AJOUTÉES 🎵 🚗 -->
             <tr data-subject="Musique">
-              <td>🎵 Musique</td>
+              <td>Musique</td>
               <td><input type="number" class="inp-coef" value="1" oninput="calculerBulletin()" /></td>
               <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
               <td class="tot-cell">-</td>
             </tr>
             <tr data-subject="Conduite">
-              <td>🚗 Conduite</td>
+              <td>Conduite</td>
               <td><input type="number" class="inp-coef" value="1" oninput="calculerBulletin()" /></td>
               <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
               <td class="tot-cell">-</td>
@@ -1344,26 +1348,70 @@
 
       <div style="padding: 0 16px;">
         <div style="background: linear-gradient(135deg, #1E1B4B, #312E81); border-radius: var(--radius-xl); padding: 18px; border: 1.5px solid #818CF8; margin-bottom: 16px;">
-          <h2 style="font-size: 16px; font-weight: 900; color:#FFF; margin-bottom: 4px;">🎯 Calcul de la Moyenne d'Orientation</h2>
+          <h2 style="font-size: 16px; font-weight: 900; color:#FFF; margin-bottom: 4px;">🎯 Calcul de la Note d'Orientation</h2>
           <p style="font-size: 11px; color: #C7D2FE; line-height: 1.4;">
-            Calcul officiel basé sur vos moyennes trimestrielles réelles et vos résultats au BEPC.
+            Calcul officiel basé sur vos moyennes trimestrielles réelles réutilisées automatiquement et vos résultats au BEPC.
           </p>
         </div>
 
         <div id="orient-result-card" style="background:#111827; border:2px solid var(--orange-ztv); border-radius:var(--radius-xl); padding:20px; text-align:center; margin-bottom:18px;">
-          <div style="font-size:11px; font-weight:800; color:var(--text-gray); text-transform:uppercase;">🎯 Moyenne d'Orientation Finale</div>
+          <div style="font-size:11px; font-weight:800; color:var(--text-gray); text-transform:uppercase;">🎯 Note d'Orientation Finale</div>
           <div style="font-size:32px; font-weight:900; color:var(--orange-ztv); margin:6px 0;" id="orient-score-val">-- / 20</div>
-          <div style="font-size:11px; font-weight:700; color:#A5B4FC;" id="orient-appreciation-lbl">Veuillez renseigner vos notes BEPC ci-dessous</div>
+          <div style="font-size:11px; font-weight:700; color:#A5B4FC;" id="orient-appreciation-lbl">Veuillez renseigner vos moyennes BEPC ci-dessous</div>
         </div>
 
-        <h3 style="font-size:13px; font-weight:800; color:#FFF; margin-bottom:12px;">📝 Saisie des notes du BEPC</h3>
+        <!-- TABLEAU RÉCAPITULATIF DES 4 MATIÈRES -->
+        <h3 style="font-size:13px; font-weight:800; color:#FFF; margin-bottom:10px;">📊 Récapitulatif du Calcul d'Orientation</h3>
+        <table class="bulletin-table" style="margin-bottom:18px;">
+          <thead>
+            <tr>
+              <th>Matière</th>
+              <th>Moy. Annuelle</th>
+              <th>BEPC</th>
+              <th>Résultat /40</th>
+              <th>Coef.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🇫🇷 Français</td>
+              <td id="table-ma-fr">--</td>
+              <td id="table-bepc-fr">--</td>
+              <td id="table-res-fr">--</td>
+              <td>2</td>
+            </tr>
+            <tr>
+              <td>➗ Mathématiques</td>
+              <td id="table-ma-ma">--</td>
+              <td id="table-bepc-ma">--</td>
+              <td id="table-res-ma">--</td>
+              <td>2</td>
+            </tr>
+            <tr>
+              <td>⚛️ Physique-Chimie</td>
+              <td id="table-ma-pc">--</td>
+              <td id="table-bepc-pc">--</td>
+              <td id="table-res-pc">--</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>🇬🇧 Anglais</td>
+              <td id="table-ma-an">--</td>
+              <td id="table-bepc-an">--</td>
+              <td id="table-res-an">--</td>
+              <td>1</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="font-size:13px; font-weight:800; color:#FFF; margin-bottom:12px;">📝 Saisie des moyennes du BEPC</h3>
 
         <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
           <div style="background:var(--bg-card); border:1px solid var(--border-light); border-radius:var(--radius-lg); padding:14px;">
             <div style="font-size:12px; font-weight:800; color:#FFF; margin-bottom:8px;">🇫🇷 Français (Coef. 2)</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:center;">
               <div style="font-size:10px; color:var(--text-gray);">Moy. Annuelle: <strong id="or-ma-fr" style="color:#FFF;">--</strong></div>
-              <div><input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-fr" placeholder="Note BEPC /20" oninput="calculerMoyenneOrientation()" /></div>
+              <div><input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-fr" placeholder="Moyenne BEPC /20" oninput="calculerMoyenneOrientation()" /></div>
             </div>
           </div>
 
@@ -1371,7 +1419,7 @@
             <div style="font-size:12px; font-weight:800; color:#FFF; margin-bottom:8px;">➗ Mathématiques (Coef. 2)</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:center;">
               <div style="font-size:10px; color:var(--text-gray);">Moy. Annuelle: <strong id="or-ma-ma" style="color:#FFF;">--</strong></div>
-              <div><input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-ma" placeholder="Note BEPC /20" oninput="calculerMoyenneOrientation()" /></div>
+              <div><input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-ma" placeholder="Moyenne BEPC /20" oninput="calculerMoyenneOrientation()" /></div>
             </div>
           </div>
 
@@ -1379,7 +1427,7 @@
             <div style="font-size:12px; font-weight:800; color:#FFF; margin-bottom:8px;">⚛️ Physique-Chimie (Coef. 1)</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:center;">
               <div style="font-size:10px; color:var(--text-gray);">Moy. Annuelle: <strong id="or-ma-pc" style="color:#FFF;">--</strong></div>
-              <div><input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-pc" placeholder="Note BEPC /20" oninput="calculerMoyenneOrientation()" /></div>
+              <div><input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-pc" placeholder="Moyenne BEPC /20" oninput="calculerMoyenneOrientation()" /></div>
             </div>
           </div>
 
@@ -1392,51 +1440,6 @@
             </div>
           </div>
         </div>
-
-        <!-- 7. RÉCAPITULATIF DES 4 MATIÈRES -->
-        <h3 style="font-size:13px; font-weight:800; color:#FFF; margin-bottom:10px;">📊 Détail des 4 matières d'orientation</h3>
-        <table class="bulletin-table" style="margin-bottom: 24px;">
-          <thead>
-            <tr>
-              <th style="font-size:10px;">Matière</th>
-              <th style="font-size:10px;">Moy. Ann.</th>
-              <th style="font-size:10px;">BEPC</th>
-              <th style="font-size:10px;">Rés. /40</th>
-              <th style="font-size:10px;">Coef.</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>🇫🇷 Français</td>
-              <td id="recap-ma-fr">--</td>
-              <td id="recap-bepc-fr">--</td>
-              <td id="recap-tot-fr" style="font-weight:800; color:var(--orange-ztv);">--</td>
-              <td>2</td>
-            </tr>
-            <tr>
-              <td>➗ Maths</td>
-              <td id="recap-ma-ma">--</td>
-              <td id="recap-bepc-ma">--</td>
-              <td id="recap-tot-ma" style="font-weight:800; color:var(--orange-ztv);">--</td>
-              <td>2</td>
-            </tr>
-            <tr>
-              <td>⚛️ Phys.-Chimie</td>
-              <td id="recap-ma-pc">--</td>
-              <td id="recap-bepc-pc">--</td>
-              <td id="recap-tot-pc" style="font-weight:800; color:var(--orange-ztv);">--</td>
-              <td>1</td>
-            </tr>
-            <tr>
-              <td>🇬🇧 Anglais</td>
-              <td id="recap-ma-an">--</td>
-              <td id="recap-bepc-an">--</td>
-              <td id="recap-tot-an" style="font-weight:800; color:var(--orange-ztv);">--</td>
-              <td>1</td>
-            </tr>
-          </tbody>
-        </table>
-
       </div>
     </div>
 
@@ -1451,16 +1454,14 @@
       </div>
     </div>
 
-    <!-- ================= BOUTON WHATSAPP FLOTTANT ================= -->
-    <a href="https://wa.me/2250799591024" target="_blank" class="whatsapp-float-btn" title="Nous contacter sur WhatsApp">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="#FFF">
-        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.347z"/>
-      </svg>
+    <!-- ================= BOUTON ASSISTANT (REMPLAÇANT DU BADGE LOGO WHATSAPP) ================= -->
+    <a href="https://wa.me/2250799591024" target="_blank" class="whatsapp-float-btn" title="Besoin d'aide ? Discuter avec l'Assistant">
+      <img src="https://i.postimg.cc/Z5t6ctQQ/file-000000008a6081f9a7552dfe57d5c70d.png" alt="Assistant Virtual Avatar" />
     </a>
 
   </div>
 
-  <!-- JAVASCRIPT & LOGIQUE COMPLÈTE -->
+  <!-- JAVASCRIPT & LOGIQUE DU PROJET -->
   <script>
     /* ==========================================================================
        1. INITIALISATION FIREBASE & CONFIGURATION
@@ -1500,12 +1501,12 @@
       if(schoolYrElem) schoolYrElem.innerText = schoolYr;
     };
 
-    /* BADGE DE CONFIRMATION ✅ */
-    function showToastBadge(message = "Opération réussie ✅") {
-      const toast = document.getElementById('toast-badge');
-      const toastText = document.getElementById('toast-badge-text');
-      if (toast && toastText) {
-        toastText.innerText = message;
+    /* FONCTION AFFICHAGE DU BADGE DE CONFIRMATION FLOOTTANT ✅ */
+    function showToastBadge(msg) {
+      const toast = document.getElementById('ztv-toast');
+      const toastTxt = document.getElementById('ztv-toast-txt');
+      if(toast && toastTxt) {
+        toastTxt.innerText = msg || "✅ Enregistré";
         toast.classList.add('show');
         setTimeout(() => {
           toast.classList.remove('show');
@@ -1524,141 +1525,7 @@
     }
 
     /* ==========================================================================
-       2. MODALES & POPUPS
-       ========================================================================== */
-    function openModal(title, htmlContent) {
-      document.getElementById('modal-title-text').innerText = title;
-      document.getElementById('modal-body-content').innerHTML = htmlContent;
-      document.getElementById('modal-container').classList.add('active');
-    }
-
-    function closeModal() {
-      document.getElementById('modal-container').classList.remove('active');
-    }
-
-    function openModalCreator() {
-      const html = `
-        <div style="text-align: center;">
-          <img src="https://i.postimg.cc/Z5t6ctQQ/file-000000008a6081f9a7552dfe57d5c70d.png" class="creator-photo-ring" />
-          <h3 style="font-size: 16px; font-weight: 800; color: #FFF;">Zakaria Niampa</h3>
-          <p style="font-size: 11px; color: var(--orange-ztv); font-weight: 700; margin-top:2px;">Fondateur & Développeur de ZTV Moyenne</p>
-          <p style="font-size: 12px; color: #9CA3AF; margin-top: 10px; line-height: 1.4;">
-            Conçu pour vous offrir un outil de calcul moderne, fiable, rapide et sécurisé.
-          </p>
-        </div>
-      `;
-      openModal("👑 Créateur de l'application", html);
-    }
-
-    function openModalResetRequest() {
-      const html = `
-        <p style="font-size:12px; color:var(--text-gray); margin-bottom:12px;">Veuillez renseigner votre Nom, Prénom et WhatsApp. Notre équipe réinitialisera votre accès rapidement.</p>
-        <div class="form-group"><input type="text" class="form-input" id="reset-nom" placeholder="Nom complet" /></div>
-        <div class="form-group"><input type="tel" class="form-input" id="reset-wa" placeholder="Numéro WhatsApp" /></div>
-        <button class="btn-main-green" onclick="sendResetRequest()">Envoyer la demande</button>
-      `;
-      openModal("🔐 Mot de passe oublié", html);
-    }
-
-    function sendResetRequest() {
-      const nom = document.getElementById('reset-nom').value.trim();
-      const wa = document.getElementById('reset-wa').value.trim();
-      if(!nom || !wa) { alert("Veuillez remplir les champs."); return; }
-      
-      db.collection('passwordResetRequests').add({
-        nom: nom, whatsapp: wa, status: 'En attente', timestamp: new Date()
-      }).then(() => {
-        closeModal();
-        showToastBadge("✅ Demande envoyée !");
-      });
-    }
-
-    /* 6. OBJECTIF : PASSER EN CLASSE SUPÉRIEURE 🎯 (DYNAMIQUE) */
-    function openModalObjectif() {
-      const t1 = trimestresData[1].moyenne;
-      const t2 = trimestresData[2].moyenne;
-      const t3 = trimestresData[3].moyenne;
-
-      let msg = "";
-      let targetScoreHTML = "";
-
-      if (t1 === null && t2 === null && t3 === null) {
-        msg = "Veuillez renseigner au moins un trimestre pour obtenir des conseils personnalisés.";
-      } else if (t1 !== null && t2 !== null && t3 !== null) {
-        const ann = (t1 + t2 + t3) / 3;
-        if (ann >= 10) {
-          msg = `🎉 Félicitations ! Votre moyenne annuelle actuelle de <strong>${ann.toFixed(2)}/20</strong> vous permet de passer en classe supérieure.`;
-        } else {
-          msg = `⚠️ Votre moyenne annuelle de <strong>${ann.toFixed(2)}/20</strong> est inférieure à 10/20. Redoublez d'efforts pour l'année prochaine !`;
-        }
-      } else if (t1 !== null && t2 !== null && t3 === null) {
-        const necessaire = 30 - (t1 + t2);
-        if (necessaire <= 0) {
-          msg = `🎯 Félicitations ! Vos deux premiers trimestres vous garantissent déjà le passage (passage déjà acquis).`;
-        } else if (necessaire > 20) {
-          msg = `⚠️ Le passage en classe supérieure nécessite au moins 10/20 de moyenne annuelle. Même avec un 20/20 au T3, la moyenne minimale sera difficile à atteindre. Donnez le meilleur de vous-même !`;
-        } else {
-          targetScoreHTML = `
-            <div style="background:#111827; border:1px solid var(--orange-ztv); border-radius:12px; padding:12px; margin:10px 0; text-align:center;">
-              <div style="font-size:10px; color:var(--text-gray); text-transform:uppercase;">Note minimale visée au 3e trimestre</div>
-              <div style="font-size:22px; font-weight:900; color:var(--orange-ztv); margin-top:2px;">${necessaire.toFixed(2)} / 20</div>
-            </div>
-          `;
-          msg = `🎯 Pour atteindre la moyenne minimale nécessaire au passage (10/20), vous devez viser au minimum <strong>${necessaire.toFixed(2)}/20</strong> au 3ᵉ trimestre.`;
-        }
-      } else if (t1 !== null && t2 === null && t3 === null) {
-        const necessaireDeuxTrims = (30 - t1) / 2;
-        msg = `🎯 Pour garantir votre passage en classe supérieure, vous devez maintenir une moyenne d'au moins <strong>${Math.max(0, necessaireDeuxTrims).toFixed(2)}/20</strong> sur les T2 et T3.`;
-      }
-
-      // Identification des matières les plus faibles
-      let subjectAverages = {};
-      [1, 2, 3].forEach(t => {
-        if (trimestresData[t].subjects) {
-          for (let sub in trimestresData[t].subjects) {
-            if (!subjectAverages[sub]) subjectAverages[sub] = [];
-            subjectAverages[sub].push(trimestresData[t].subjects[sub].note);
-          }
-        }
-      });
-
-      let weakSubjectsList = [];
-      for (let sub in subjectAverages) {
-        let avg = subjectAverages[sub].reduce((a, b) => a + b, 0) / subjectAverages[sub].length;
-        weakSubjectsList.push({ name: sub, avg: avg });
-      }
-
-      weakSubjectsList.sort((a, b) => a.avg - b.avg);
-
-      let weakHTML = "";
-      if (weakSubjectsList.length > 0) {
-        weakHTML = `<div style="margin-top:14px; text-align:left;">
-          <h4 style="font-size:12px; font-weight:800; color:#EF4444; margin-bottom:8px;">📚 Matières à améliorer en priorité :</h4>
-          <div style="display:flex; flex-direction:column; gap:6px;">`;
-        weakSubjectsList.slice(0, 3).forEach(item => {
-          weakHTML += `
-            <div style="background:#111827; border:1px solid var(--border-light); padding:8px 12px; border-radius:8px; display:flex; justify-space-between; align-items:center;">
-              <span style="font-size:12px; font-weight:700;">${item.name}</span>
-              <span style="font-size:12px; font-weight:900; color:${item.avg < 10 ? '#EF4444' : '#FF8C00'};">${item.avg.toFixed(2)}/20</span>
-            </div>
-          `;
-        });
-        weakHTML += `</div></div>`;
-      }
-
-      const modalContent = `
-        <div style="text-align:left; font-size:12px; line-height:1.5;">
-          ${msg}
-          ${targetScoreHTML}
-          ${weakHTML}
-        </div>
-      `;
-
-      openModal("🎯 Objectif & Conseils Personnalisés", modalContent);
-    }
-
-    /* ==========================================================================
-       3. ESPACE ADMINISTRATEUR SÉCURISÉ & GESTION LIEN PARTICIPANTS
+       2. ESPACE ADMINISTRATEUR SÉCURISÉ & GESTION LIEN PARTICIPANTS
        ========================================================================== */
     function actionAdminLogin() {
       const u = document.getElementById('admin-user').value.trim();
@@ -1668,7 +1535,7 @@
       if(u === 'ZakariaTV' && p === '55250031') {
         isAdmin = true;
         err.style.display = 'none';
-        showToastBadge("✅ Connexion Admin réussie");
+        showToastBadge("✅ Connexion réussie");
         switchPage('view-admin-dashboard');
         loadAdminStats();
       } else {
@@ -1776,7 +1643,8 @@
 
     function toggleUserAccount(docId, newStatus) {
       db.collection('users').doc(docId).update({ active: newStatus }).then(() => {
-        showToastBadge("✅ Compte mis à jour");
+        showToastBadge("✅ Modification effectuée");
+        alert(newStatus ? "Le compte a été réactivé !" : "Le compte a été désactivé. L'élève peut désormais se réinscrire si besoin.");
         fetchAdminEleves();
         loadAdminStats();
       });
@@ -1808,7 +1676,8 @@
 
     function resetStudentPassword(reqId, whatsapp) {
       db.collection('passwordResetRequests').doc(reqId).update({ status: 'Traité' }).then(() => {
-        showToastBadge("✅ Demande traitée");
+        showToastBadge("✅ Modification effectuée");
+        alert("Demande marquée comme traitée.");
         fetchAdminPwdRequests();
       });
     }
@@ -1867,18 +1736,20 @@
       const input = document.getElementById('student-app-link');
       input.select();
       document.execCommand("copy");
-      showToastBadge("✅ Lien copié !");
+      showToastBadge("✅ Lien copié");
+      alert("Lien des participants copié avec succès !");
     }
 
     function updateLinkFirebase() {
       const newUrl = document.getElementById('student-app-link').value;
       db.collection('settings').doc('appConfig').set({ studentAppUrl: newUrl }, { merge: true }).then(() => {
-        showToastBadge("✅ Lien mis à jour !");
+        showToastBadge("✅ Modification effectuée");
+        alert("Lien mis à jour avec succès dans Firebase !");
       });
     }
 
     /* ==========================================================================
-       4. LOGIQUE PARTICIPANTS & OPTIMISATION AUTHENTIFICATION RAPIDE ⚡
+       3. LOGIQUE PARTICIPANTS & SYNCHRONISATION FIREBASE COMPLÈTE
        ========================================================================== */
     function switchAuthTab(tab) {
       const loginBtn = document.getElementById('tab-login-btn');
@@ -1898,6 +1769,7 @@
       }
     }
 
+    /* OPTIMISATION DE LA CONNEXION (RAPIDE & SÉCURISÉE) */
     function actionLogin() {
       const fullnameInput = document.getElementById('login-fullname').value.trim();
       const passInput = document.getElementById('login-pass').value;
@@ -1911,11 +1783,9 @@
         return;
       }
 
-      // Requête optimisée
       db.collection('users')
         .where('pass', '==', passInput)
         .where('active', '==', true)
-        .limit(10)
         .get()
         .then(snap => {
           let userMatch = null;
@@ -1932,22 +1802,23 @@
             if(currentUser.trimestresData) {
               trimestresData = currentUser.trimestresData;
             }
+            showToastBadge("✅ Confirmation réussie");
             updateProfileDisplay();
             updateAppPhotos();
             checkClasse3emeUI();
-            showToastBadge("✅ Connexion réussie");
             switchPage('view-dashboard');
             actualiserMoyennesGlobales();
           } else {
             errBox.innerText = "Vos informations sont incorrectes ou votre compte a été désactivé.";
             errBox.style.display = 'block';
           }
-        }).catch(() => {
-          errBox.innerText = "Erreur de connexion. Veuillez réessayer.";
+        }).catch(err => {
+          errBox.innerText = "Erreur de connexion à Firebase. Veuillez réessayer.";
           errBox.style.display = 'block';
         });
     }
 
+    /* OPTIMISATION DE LA CRÉATION DE COMPTE (RAPIDE & SÉCURISÉE) */
     function actionRegister() {
       const nom = document.getElementById('reg-nom').value.trim();
       const prenom = document.getElementById('reg-prenom').value.trim();
@@ -1964,7 +1835,6 @@
 
       const fullname = (nom + " " + prenom).trim();
 
-      // Vérification rapide anti-doublon
       db.collection('users')
         .where('active', '==', true)
         .get()
@@ -1981,7 +1851,7 @@
           if(isDuplicate) {
             errBox.innerText = "Ces informations ont déjà un compte actif. Veuillez vous connecter.";
             errBox.style.display = 'block';
-            setTimeout(() => switchAuthTab('login'), 2200);
+            setTimeout(() => switchAuthTab('login'), 2500);
             return;
           }
 
@@ -2013,10 +1883,10 @@
           db.collection('users').add(newUser).then(ref => {
             currentUser = { id: ref.id, ...newUser };
             trimestresData = currentUser.trimestresData;
+            showToastBadge("✅ Enregistré");
             updateProfileDisplay();
             updateAppPhotos();
             checkClasse3emeUI();
-            showToastBadge("✅ Compte créé avec succès");
             switchPage('view-dashboard');
             actualiserMoyennesGlobales();
           });
@@ -2089,7 +1959,6 @@
         2: { points: 0, coefs: 0, moyenne: null, subjects: {} },
         3: { points: 0, coefs: 0, moyenne: null, subjects: {} }
       };
-      showToastBadge("✅ Déconnexion réussie");
       switchPage('view-auth');
     }
 
@@ -2167,236 +2036,385 @@
       }
 
       if(currentUser && currentUser.id) {
-        currentUser.trimestresData = trimestresData;
-        db.collection('users').doc(currentUser.id).update({ trimestresData: trimestresData });
-        
+        db.collection('users').doc(currentUser.id).update({
+          trimestresData: trimestresData
+        }).then(() => {
+          showToastBadge("✅ Enregistré");
+        });
+
+        // Enregistrer le calcul dans la collection d'administration
         db.collection('results').add({
-          studentId: currentUser.id,
-          studentName: currentUser.fullname,
+          userId: currentUser.id,
+          userName: currentUser.fullname,
           trimestre: activeTrimestre,
           moyenne: trimestresData[activeTrimestre].moyenne,
-          timestamp: new Date()
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
+      } else {
+        showToastBadge("✅ Enregistré");
       }
 
-      showToastBadge("✅ Saisie enregistrée");
       actualiserMoyennesGlobales();
       switchPage('view-dashboard');
     }
 
-    /* 3. PROGRESSION GÉNÉRALE CALCULÉE EN POURCENTAGE (%) 📊 */
     function actualiserMoyennesGlobales() {
-      const t1 = trimestresData[1].moyenne;
-      const t2 = trimestresData[2].moyenne;
-      const t3 = trimestresData[3].moyenne;
+      const m1 = trimestresData[1].moyenne;
+      const m2 = trimestresData[2].moyenne;
+      const m3 = trimestresData[3].moyenne;
 
-      document.getElementById('val-t1').innerText = (t1 !== null) ? t1.toFixed(2) + " /20" : "-- /20";
-      document.getElementById('val-t2').innerText = (t2 !== null) ? t2.toFixed(2) + " /20" : "-- /20";
-      document.getElementById('val-t3').innerText = (t3 !== null) ? t3.toFixed(2) + " /20" : "-- /20";
+      document.getElementById('val-t1').innerText = m1 !== null ? m1.toFixed(2) + " /20" : "-- /20";
+      document.getElementById('val-t2').innerText = m2 !== null ? m2.toFixed(2) + " /20" : "-- /20";
+      document.getElementById('val-t3').innerText = m3 !== null ? m3.toFixed(2) + " /20" : "-- /20";
 
-      document.getElementById('prof-t1-val').innerText = (t1 !== null) ? t1.toFixed(2) + " /20" : "-- /20";
-      document.getElementById('prof-t2-val').innerText = (t2 !== null) ? t2.toFixed(2) + " /20" : "-- /20";
-      document.getElementById('prof-t3-val').innerText = (t3 !== null) ? t3.toFixed(2) + " /20" : "-- /20";
+      document.getElementById('prof-t1-val').innerText = m1 !== null ? m1.toFixed(2) + " /20" : "-- /20";
+      document.getElementById('prof-t2-val').innerText = m2 !== null ? m2.toFixed(2) + " /20" : "-- /20";
+      document.getElementById('prof-t3-val').innerText = m3 !== null ? m3.toFixed(2) + " /20" : "-- /20";
 
-      let validTrims = [];
-      if (t1 !== null) validTrims.push(t1);
-      if (t2 !== null) validTrims.push(t2);
-      if (t3 !== null) validTrims.push(t3);
+      let somme = 0;
+      let count = 0;
+      if(m1 !== null) { somme += m1; count++; }
+      if(m2 !== null) { somme += m2; count++; }
+      if(m3 !== null) { somme += m3; count++; }
 
-      if (validTrims.length > 0) {
-        const currentAvg = validTrims.reduce((a, b) => a + b, 0) / validTrims.length;
-        const pct = Math.min(100, Math.max(0, Math.round((currentAvg / 20) * 100)));
+      let ann = count > 0 ? (somme / count) : null;
 
-        document.getElementById('circle-pct').innerText = pct + " %";
+      if(ann !== null) {
+        const annFormatted = ann.toFixed(2);
+        document.getElementById('val-annual').innerText = annFormatted + " /20";
+        document.getElementById('prof-annuel-val').innerText = annFormatted + " /20";
+        
+        const mention = meGetMention(ann);
+        document.getElementById('val-mention').innerText = mention;
+        document.getElementById('prof-mention-val').innerText = mention;
+
+        const decision = ann >= 10 ? "Admis (Classe supérieure)" : "Ajourné";
+        document.getElementById('val-decision').innerText = decision;
+
+        // CALCUL DE LA PROGRESSION EN POURCENTAGE (RÉEL) 📊
+        const pct = Math.min(100, Math.round((ann / 20) * 100));
+        document.getElementById('circle-pct').innerText = pct + "%";
         document.getElementById('bar-fill').style.width = pct + "%";
 
-        let descText = "";
-        let colorBar = "#EF4444";
+        let progLabel = "";
+        let color = "#EF4444";
 
-        if (pct < 45) {
-          descText = "Progression faible — redouble d'efforts !";
-          colorBar = "#EF4444";
-        } else if (pct < 60) {
-          descText = "Progression moyenne — tu peux faire mieux !";
-          colorBar = "#FF8C00";
-        } else if (pct < 75) {
-          descText = "Bonne progression — continue tes efforts !";
-          colorBar = "#10B981";
-        } else if (pct < 85) {
-          descText = "Très bonne progression — excellent travail !";
-          colorBar = "#09A63D";
+        if(pct < 50) {
+          progLabel = "Progression faible";
+          color = "#EF4444";
+        } else if(pct < 60) {
+          progLabel = "Progression moyenne";
+          color = "#F59E0B";
+        } else if(pct < 70) {
+          progLabel = "Bonne progression — continue tes efforts !";
+          color = "#3B82F6";
+        } else if(pct < 85) {
+          progLabel = "Très bonne progression !";
+          color = "#10B981";
         } else {
-          descText = "Excellente performance — félicitations !";
-          colorBar = "#818CF8";
+          progLabel = "Excellente performance !";
+          color = "#09A63D";
         }
 
-        document.getElementById('prog-desc').innerText = descText;
-        document.getElementById('prog-desc').style.color = colorBar;
-        document.getElementById('bar-fill').style.background = colorBar;
-        document.getElementById('circle-pct').style.borderColor = colorBar;
+        document.getElementById('prog-desc').innerText = progLabel;
+        document.getElementById('circle-pct').style.borderColor = color;
+        document.getElementById('bar-fill').style.background = color;
+
+        if(currentUser && currentUser.id) {
+          db.collection('users').doc(currentUser.id).update({
+            annualAvg: ann
+          });
+        }
       } else {
-        document.getElementById('circle-pct').innerText = "0 %";
+        document.getElementById('val-annual').innerText = "-- /20";
+        document.getElementById('prof-annuel-val').innerText = "-- /20";
+        document.getElementById('val-mention').innerText = "--";
+        document.getElementById('prof-mention-val').innerText = "--";
+        document.getElementById('val-decision').innerText = "--";
+
+        document.getElementById('circle-pct').innerText = "0%";
         document.getElementById('bar-fill').style.width = "0%";
         document.getElementById('prog-desc').innerText = "Renseignez vos moyennes par trimestre";
       }
 
-      if(t1 !== null && t2 !== null && t3 !== null) {
-        const moyAnnuelle = (t1 + t2 + t3) / 3;
-        document.getElementById('val-annual').innerText = moyAnnuelle.toFixed(2) + " /20";
-        document.getElementById('prof-annuel-val').innerText = moyAnnuelle.toFixed(2) + " /20";
-        
-        const mention = meGetMention(moyAnnuelle);
-        document.getElementById('val-mention').innerText = mention;
-        document.getElementById('prof-mention-val').innerText = mention;
+      updateCertifDisplay();
+    }
 
-        const decision = (moyAnnuelle >= 10) ? "Admis(e) 🟢" : "Ajourné(e) 🔴";
-        document.getElementById('val-decision').innerText = decision;
+    /* 6. OBJECTIF : PASSER EN CLASSE SUPÉRIEURE (DYNAMICALLY CALCULATED) 🎯 */
+    function openModalObjectif() {
+      const m1 = trimestresData[1].moyenne;
+      const m2 = trimestresData[2].moyenne;
+      const m3 = trimestresData[3].moyenne;
 
-        if(currentUser && currentUser.id) {
-          db.collection('users').doc(currentUser.id).update({ annualAvg: moyAnnuelle.toFixed(2) });
-          if(moyAnnuelle >= 13.0) {
-            db.collection('honorBoards').add({
-              nom: currentUser.nom,
-              prenom: currentUser.prenom,
-              classe: currentUser.classe,
-              moyenne: moyAnnuelle.toFixed(2)
-            });
+      let title = "🎯 Objectif : Passer en classe supérieure";
+      let html = "";
+
+      let filledCount = 0;
+      let totalSum = 0;
+      if(m1 !== null) { totalSum += m1; filledCount++; }
+      if(m2 !== null) { totalSum += m2; filledCount++; }
+      if(m3 !== null) { totalSum += m3; filledCount++; }
+
+      if(filledCount === 0) {
+        html = `
+          <div style="text-align:center; padding:10px;">
+            <p style="font-size:13px; color:#FFF; margin-bottom:12px;">Veuillez renseigner au moins un trimestre pour afficher votre objectif et vos conseils personnalisés.</p>
+          </div>
+        `;
+      } else {
+        let currentAvg = totalSum / filledCount;
+
+        html += `<p style="font-size:12px; color:#FFF; margin-bottom:10px;">Moyenne actuelle : <strong style="color:var(--orange-ztv);">${currentAvg.toFixed(2)}/20</strong></p>`;
+
+        if(filledCount < 3) {
+          const neededSumFor10 = 10 * 3;
+          const remainingTrim = 3 - filledCount;
+          const requiredAvg = (neededSumFor10 - totalSum) / remainingTrim;
+
+          if(requiredAvg <= 0) {
+            html += `<p style="font-size:12px; color:var(--green-ztv); font-weight:800; margin-bottom:12px;">🎯 Votre moyenne est excellente ! Vous avez déjà accumulé suffisamment de points pour valider le passage.</p>`;
+          } else if(requiredAvg > 20) {
+            html += `<p style="font-size:12px; color:var(--red-ztv); font-weight:800; margin-bottom:12px;">⚠️ L'objectif de 10/20 est très difficile à atteindre mathématiquement. Donnez le meilleur de vous-même pour remonter le niveau !</p>`;
+          } else {
+            html += `<p style="font-size:12px; color:#FFF; margin-bottom:12px;">🎯 Pour atteindre la moyenne nécessaire au passage (10/20), vous devez viser au minimum <strong style="color:var(--orange-ztv);">${requiredAvg.toFixed(2)}/20</strong> sur le(s) trimestre(s) restant(s).</p>`;
+          }
+        } else {
+          if(currentAvg >= 10) {
+            html += `<p style="font-size:12px; color:var(--green-ztv); font-weight:800; margin-bottom:12px;">🎉 Bravo ! Avec une moyenne annuelle de ${currentAvg.toFixed(2)}/20, votre objectif de passage en classe supérieure est atteint !</p>`;
+          } else {
+            html += `<p style="font-size:12px; color:var(--red-ztv); font-weight:800; margin-bottom:12px;">⚠️ Votre moyenne annuelle finale (${currentAvg.toFixed(2)}/20) est inférieure à 10/20. Travaillez les matières faibles pour l'année prochaine !</p>`;
+          }
+        }
+
+        // DÉTECTION AUTOMATIQUE DES MATIÈRES WEAK
+        let subjectAverages = {};
+        for(let t=1; t<=3; t++) {
+          if(trimestresData[t] && trimestresData[t].subjects) {
+            for(let s in trimestresData[t].subjects) {
+              if(!subjectAverages[s]) subjectAverages[s] = { sum: 0, cnt: 0 };
+              subjectAverages[s].sum += trimestresData[t].subjects[s].note;
+              subjectAverages[s].cnt++;
+            }
+          }
+        }
+
+        let weakSubjects = [];
+        for(let s in subjectAverages) {
+          let avg = subjectAverages[s].sum / subjectAverages[s].cnt;
+          weakSubjects.push({ subject: s, avg: avg });
+        }
+
+        weakSubjects.sort((a,b) => a.avg - b.avg);
+
+        if(weakSubjects.length > 0) {
+          html += `<div style="margin-top:14px; text-align:left;"><strong style="font-size:12px; color:var(--orange-ztv); display:block; margin-bottom:8px;">📚 Matières à améliorer en priorité :</strong>`;
+          weakSubjects.slice(0, 3).forEach(item => {
+            html += `
+              <div class="profile-field-item" style="margin-bottom:6px;">
+                <span class="profile-field-label" style="color:#FFF;">${item.subject}</span>
+                <span class="profile-field-value" style="color:${item.avg < 10 ? 'var(--red-ztv)' : 'var(--orange-ztv)'};">${item.avg.toFixed(2)}/20</span>
+              </div>
+            `;
+          });
+          html += `</div>`;
+        }
+      }
+
+      openModal(title, html);
+    }
+
+    /* 8. RÉCUPÉRATION AUTOMATIQUE DES NOTES POUR ORIENTATION ⚠️ */
+    function preparerPageOrientation() {
+      let subjectAverages = {};
+
+      for(let t=1; t<=3; t++) {
+        if(trimestresData[t] && trimestresData[t].subjects) {
+          for(let s in trimestresData[t].subjects) {
+            if(!subjectAverages[s]) subjectAverages[s] = { sum: 0, cnt: 0 };
+            subjectAverages[s].sum += trimestresData[t].subjects[s].note;
+            subjectAverages[s].cnt++;
           }
         }
       }
-    }
 
-    /* 8. RÉCUPÉRATION AUTOMATIQUE DES NOTES TRIMESTRIELLES POUR L'ORIENTATION ⚠️ */
-    function getMoyenneAnnuelleSub(subjectName) {
-      let notes = [];
-      [1, 2, 3].forEach(t => {
-        if(trimestresData[t].subjects && trimestresData[t].subjects[subjectName] !== undefined) {
-          notes.push(trimestresData[t].subjects[subjectName].note);
+      function getAvgFor(name) {
+        if(subjectAverages[name] && subjectAverages[name].cnt > 0) {
+          return (subjectAverages[name].sum / subjectAverages[name].cnt).toFixed(2);
         }
-      });
-      if(notes.length === 0) return null;
-      return notes.reduce((a, b) => a + b, 0) / notes.length;
-    }
+        return null;
+      }
 
-    function preparerPageOrientation() {
-      const maFr = getMoyenneAnnuelleSub("Français");
-      const maMa = getMoyenneAnnuelleSub("Mathématiques");
-      const maPc = getMoyenneAnnuelleSub("Physique - Chimie");
-      const maAn = getMoyenneAnnuelleSub("Anglais");
+      const maFr = getAvgFor("Français");
+      const maMa = getAvgFor("Mathématiques");
+      const maPc = getAvgFor("Physique - Chimie") || getAvgFor("Physique-Chimie");
+      const maAn = getAvgFor("Anglais");
 
-      document.getElementById('or-ma-fr').innerText = (maFr !== null) ? maFr.toFixed(2) + "/20" : "Non renseigné";
-      document.getElementById('or-ma-ma').innerText = (maMa !== null) ? maMa.toFixed(2) + "/20" : "Non renseigné";
-      document.getElementById('or-ma-pc').innerText = (maPc !== null) ? maPc.toFixed(2) + "/20" : "Non renseigné";
-      document.getElementById('or-ma-an').innerText = (maAn !== null) ? maAn.toFixed(2) + "/20" : "Non renseigné";
+      document.getElementById('or-ma-fr').innerText = maFr !== null ? maFr + "/20" : "--";
+      document.getElementById('or-ma-ma').innerText = maMa !== null ? maMa + "/20" : "--";
+      document.getElementById('or-ma-pc').innerText = maPc !== null ? maPc + "/20" : "--";
+      document.getElementById('or-ma-an').innerText = maAn !== null ? maAn + "/20" : "--";
 
-      document.getElementById('recap-ma-fr').innerText = (maFr !== null) ? maFr.toFixed(2) : "--";
-      document.getElementById('recap-ma-ma').innerText = (maMa !== null) ? maMa.toFixed(2) : "--";
-      document.getElementById('recap-ma-pc').innerText = (maPc !== null) ? maPc.toFixed(2) : "--";
-      document.getElementById('recap-ma-an').innerText = (maAn !== null) ? maAn.toFixed(2) : "--";
+      document.getElementById('table-ma-fr').innerText = maFr !== null ? maFr : "--";
+      document.getElementById('table-ma-ma').innerText = maMa !== null ? maMa : "--";
+      document.getElementById('table-ma-pc').innerText = maPc !== null ? maPc : "--";
+      document.getElementById('table-ma-an').innerText = maAn !== null ? maAn : "--";
 
       calculerMoyenneOrientation();
     }
 
+    /* 7. RÉCAPITULATIF ET CALCUL SÉCURISÉ MOYENNE D'ORIENTATION */
     function calculerMoyenneOrientation() {
-      const maFr = getMoyenneAnnuelleSub("Français") || 0;
-      const maMa = getMoyenneAnnuelleSub("Mathématiques") || 0;
-      const maPc = getMoyenneAnnuelleSub("Physique - Chimie") || 0;
-      const maAn = getMoyenneAnnuelleSub("Anglais") || 0;
+      const maFr = parseFloat(document.getElementById('table-ma-fr').innerText) || 0;
+      const maMa = parseFloat(document.getElementById('table-ma-ma').innerText) || 0;
+      const maPc = parseFloat(document.getElementById('table-ma-pc').innerText) || 0;
+      const maAn = parseFloat(document.getElementById('table-ma-an').innerText) || 0;
 
       const bepcFr = parseFloat(document.getElementById('bepc-note-fr').value) || 0;
       const bepcMa = parseFloat(document.getElementById('bepc-note-ma').value) || 0;
       const bepcPc = parseFloat(document.getElementById('bepc-note-pc').value) || 0;
+      
       const bepcAnEcrit = parseFloat(document.getElementById('bepc-an-ecrit').value) || 0;
       const bepcAnOral = parseFloat(document.getElementById('bepc-an-oral').value) || 0;
+      const bepcAn = (bepcAnEcrit + bepcAnOral) / (bepcAnEcrit && bepcAnOral ? 2 : 1);
 
-      const bepcAnMoy = (bepcAnEcrit + bepcAnOral) / 2;
+      document.getElementById('table-bepc-fr').innerText = bepcFr > 0 ? bepcFr.toFixed(2) : "--";
+      document.getElementById('table-bepc-ma').innerText = bepcMa > 0 ? bepcMa.toFixed(2) : "--";
+      document.getElementById('table-bepc-pc').innerText = bepcPc > 0 ? bepcPc.toFixed(2) : "--";
+      document.getElementById('table-bepc-an').innerText = bepcAn > 0 ? bepcAn.toFixed(2) : "--";
 
-      document.getElementById('recap-bepc-fr').innerText = bepcFr ? bepcFr.toFixed(2) : "--";
-      document.getElementById('recap-bepc-ma').innerText = bepcMa ? bepcMa.toFixed(2) : "--";
-      document.getElementById('recap-bepc-pc').innerText = bepcPc ? bepcPc.toFixed(2) : "--";
-      document.getElementById('recap-bepc-an').innerText = (bepcAnEcrit || bepcAnOral) ? bepcAnMoy.toFixed(2) : "--";
+      const resFr = maFr + bepcFr;
+      const resMa = maMa + bepcMa;
+      const resPc = maPc + bepcPc;
+      const resAn = maAn + bepcAn;
 
-      const totFr = maFr + bepcFr;
-      const totMa = maMa + bepcMa;
-      const totPc = maPc + bepcPc;
-      const totAn = maAn + bepcAnMoy;
+      document.getElementById('table-res-fr').innerText = resFr > 0 ? resFr.toFixed(2) : "--";
+      document.getElementById('table-res-ma').innerText = resMa > 0 ? resMa.toFixed(2) : "--";
+      document.getElementById('table-res-pc').innerText = resPc > 0 ? resPc.toFixed(2) : "--";
+      document.getElementById('table-res-an').innerText = resAn > 0 ? resAn.toFixed(2) : "--";
 
-      document.getElementById('recap-tot-fr').innerText = totFr ? totFr.toFixed(2) : "--";
-      document.getElementById('recap-tot-ma').innerText = totMa ? totMa.toFixed(2) : "--";
-      document.getElementById('recap-tot-pc').innerText = totPc ? totPc.toFixed(2) : "--";
-      document.getElementById('recap-tot-an').innerText = totAn ? totAn.toFixed(2) : "--";
+      const totPts = (resFr * 2) + (resMa * 2) + (resPc * 1) + (resAn * 1);
+      const totCoef = 6;
+      const orientMoy = totPts / (totCoef * 2);
 
-      // Calcul officiel de la moyenne d'orientation
-      const totalPoints = (totFr * 2) + (totMa * 2) + (totPc * 1) + (totAn * 1); // Total /240
-      const scoreOrientation = totalPoints / 12; // Ramenée sur /20
+      if(bepcFr > 0 || bepcMa > 0 || bepcPc > 0 || bepcAn > 0) {
+        showToastBadge("✅ Calculation effectué");
+        document.getElementById('orient-score-val').innerText = orientMoy.toFixed(2) + " / 20";
+        let app = orientMoy >= 10 ? "Très bonnes chances d'orientation en Seconde Générale !" : "Attention, retravaillez vos matières scientifiques et littéraires.";
+        document.getElementById('orient-appreciation-lbl').innerText = app;
 
-      if (bepcFr > 0 || bepcMa > 0) {
-        document.getElementById('orient-score-val').innerText = scoreOrientation.toFixed(2) + " / 20";
-        let appreciation = "";
-        if (scoreOrientation >= 14) appreciation = "🟢 Excellent dossier d'orientation vers la Seconde A/C";
-        else if (scoreOrientation >= 10) appreciation = "🟡 Dossier d'orientation Favorable";
-        else appreciation = "🔴 Risque de non-orientation - Donnez le maximum au BEPC !";
-        document.getElementById('orient-appreciation-lbl').innerText = appreciation;
-
-        if (currentUser && currentUser.id) {
+        if(currentUser && currentUser.id) {
           db.collection('orientations').add({
-            studentId: currentUser.id,
-            studentName: currentUser.fullname,
-            score: scoreOrientation.toFixed(2),
-            timestamp: new Date()
+            userId: currentUser.id,
+            userName: currentUser.fullname,
+            score: orientMoy.toFixed(2),
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
           });
         }
       }
     }
 
-    function ouvrirTableauHonneurAccueil() {
-      const t1 = trimestresData[1].moyenne;
-      const t2 = trimestresData[2].moyenne;
-      const t3 = trimestresData[3].moyenne;
-
-      let moyAnnuelle = null;
-      if (t1 !== null && t2 !== null && t3 !== null) {
-        moyAnnuelle = (t1 + t2 + t3) / 3;
-      }
-
-      if (moyAnnuelle === null) {
-        alert("Veuillez remplir vos 3 trimestres pour afficher le Tableau d'Honneur Annuel.");
-        return;
-      }
-
-      if (moyAnnuelle < 12.0) {
-        alert("Votre moyenne annuelle (" + moyAnnuelle.toFixed(2) + "/20) est inférieure à 12,00. Travaillez encore pour obtenir le Tableau d'Honneur !");
-        return;
-      }
-
-      changeCertifPeriod('annuel');
-      switchPage('view-certif');
-    }
-
     function changeCertifPeriod(period) {
       selectedCertifPeriod = period;
       document.querySelectorAll('.certif-tab-btn').forEach(btn => btn.classList.remove('active'));
-      const activeBtn = document.getElementById('cert-tab-' + period);
-      if(activeBtn) activeBtn.classList.add('active');
+      document.getElementById('cert-tab-' + period).classList.add('active');
+      updateCertifDisplay();
+    }
 
-      let val = null;
-      let lblText = "Moyenne Annuelle";
+    function updateCertifDisplay() {
+      let val = "--";
+      let lbl = "Moyenne Annuelle";
 
-      if(period === 'annuel') {
-        const t1 = trimestresData[1].moyenne, t2 = trimestresData[2].moyenne, t3 = trimestresData[3].moyenne;
-        if(t1 !== null && t2 !== null && t3 !== null) val = (t1 + t2 + t3) / 3;
-        lblText = "Moyenne Annuelle";
-      } else if(period === 't1') {
-        val = trimestresData[1].moyenne; lblText = "Moyenne 1er Trimestre";
-      } else if(period === 't2') {
-        val = trimestresData[2].moyenne; lblText = "Moyenne 2e Trimestre";
-      } else if(period === 't3') {
-        val = trimestresData[3].moyenne; lblText = "Moyenne 3e Trimestre";
+      if(selectedCertifPeriod === 'annuel') {
+        let annText = document.getElementById('val-annual').innerText;
+        val = annText.replace(' /20', '');
+        lbl = "Moyenne Annuelle";
+      } else if(selectedCertifPeriod === 't1') {
+        val = trimestresData[1].moyenne !== null ? trimestresData[1].moyenne.toFixed(2) : "--";
+        lbl = "Moyenne 1er Trimestre";
+      } else if(selectedCertifPeriod === 't2') {
+        val = trimestresData[2].moyenne !== null ? trimestresData[2].moyenne.toFixed(2) : "--";
+        lbl = "Moyenne 2e Trimestre";
+      } else if(selectedCertifPeriod === 't3') {
+        val = trimestresData[3].moyenne !== null ? trimestresData[3].moyenne.toFixed(2) : "--";
+        lbl = "Moyenne 3e Trimestre";
       }
 
-      document.getElementById('cert-period-lbl').innerText = lblText;
-      document.getElementById('cert-annual-val').innerText = (val !== null) ? val.toFixed(2) + " /20" : "-- /20";
-      document.getElementById('cert-mention-lbl').innerText = meGetMention(val);
+      document.getElementById('cert-period-lbl').innerText = lbl;
+      document.getElementById('cert-annual-val').innerText = val + " /20";
+      
+      let num = parseFloat(val);
+      document.getElementById('cert-mention-lbl').innerText = meGetMention(num);
+    }
+
+    function ouvrirTableauHonneurAccueil() {
+      switchPage('view-certif');
+      if(currentUser && currentUser.id && currentUser.annualAvg) {
+        db.collection('honorBoards').add({
+          userId: currentUser.id,
+          nom: currentUser.nom,
+          prenom: currentUser.prenom,
+          classe: currentUser.classe,
+          moyenne: currentUser.annualAvg,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    }
+
+    function openModalCreator() {
+      const title = "👑 Créateur de l'application";
+      const html = `
+        <div style="text-align:center;">
+          <img src="https://i.postimg.cc/Z5t6ctQQ/file-000000008a6081f9a7552dfe57d5c70d.png" class="creator-photo-ring" />
+          <h3 style="font-size:16px; font-weight:800; color:#FFF;">Zakaria Niampa</h3>
+          <p style="font-size:11px; color:var(--orange-ztv); font-weight:700; margin-top:2px;">Fondateur & Développeur Principal</p>
+          <p style="font-size:12px; color:var(--text-gray); margin-top:10px; line-height:1.4;">
+            Concepteur de la suite logicielle ZTV Moyenne pour faciliter le suivi scolaire et la réussite des élèves.
+          </p>
+        </div>
+      `;
+      openModal(title, html);
+    }
+
+    function openModalResetRequest() {
+      const title = "🔐 Mot de passe oublié";
+      const html = `
+        <div>
+          <p style="font-size:12px; color:var(--text-gray); margin-bottom:12px;">Saisissez vos informations pour envoyer une demande de réinitialisation à l'administrateur :</p>
+          <input type="text" class="form-input" id="reset-nom" placeholder="Nom complet" style="margin-bottom:10px;" />
+          <input type="tel" class="form-input" id="reset-wa" placeholder="Numéro WhatsApp" style="margin-bottom:12px;" />
+          <button class="btn-main-green" onclick="submitResetRequest()">Envoyer la demande</button>
+        </div>
+      `;
+      openModal(title, html);
+    }
+
+    function submitResetRequest() {
+      const nom = document.getElementById('reset-nom').value.trim();
+      const wa = document.getElementById('reset-wa').value.trim();
+      if(nom && wa) {
+        db.collection('passwordResetRequests').add({
+          nom: nom,
+          whatsapp: wa,
+          status: 'En attente',
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+          showToastBadge("✅ Enregistré");
+          alert("Votre demande a été envoyée avec succès à l'administrateur.");
+          closeModal();
+        });
+      } else {
+        alert("Veuillez remplir tous les champs.");
+      }
+    }
+
+    function openModal(title, contentHtml) {
+      document.getElementById('modal-title-text').innerHTML = title;
+      document.getElementById('modal-body-content').innerHTML = contentHtml;
+      document.getElementById('modal-container').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-container').classList.remove('active');
     }
   </script>
 </body>
