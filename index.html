@@ -105,6 +105,32 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* BADGE DE CONFIRMATION FLOOTTANT ✅ */
+    .toast-badge {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #10B981;
+      color: #FFFFFF;
+      padding: 10px 20px;
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+      z-index: 9999;
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+    }
+    .toast-badge.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
     /* LOGO & BRANDING */
     .ztv-logo-brand {
       height: 38px;
@@ -387,13 +413,14 @@
       margin: 0 16px 16px; color: #0F172A; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-card);
     }
     .prog-circle {
-      width: 56px; height: 56px; border-radius: 50%; border: 5px solid #EF4444;
+      width: 58px; height: 58px; border-radius: 50%; border: 4px solid #09A63D;
       display: flex; align-items: center; justify-content: center;
       font-weight: 900; font-size: 14px; color: #0F172A; flex-shrink: 0;
       transition: var(--transition);
+      background: #F8FAFC;
     }
     .prog-bar-bg { width: 100%; height: 8px; background: #E2E8F0; border-radius: 4px; overflow: hidden; margin-top: 6px; }
-    .prog-bar-fill { height: 100%; width: 0%; background: #EF4444; border-radius: 4px; transition: all 0.5s ease; }
+    .prog-bar-fill { height: 100%; width: 0%; background: #09A63D; border-radius: 4px; transition: all 0.5s ease; }
 
     .objective-banner {
       background: linear-gradient(135deg, #FF8C00, #D95300);
@@ -564,7 +591,7 @@
 
     .cert-badge-box {
       background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border: 1.5px solid #F59E0B;
-      border-radius: 12px; padding: 10px; display: flex; justify-content: space-around; align-items: center; margin: 14px 0; width: 100%;
+      border-radius: 12px; padding: 10px; display: flex; justify-space-around: align-items: center; margin: 14px 0; width: 100%;
     }
 
     .cert-badge-lbl { font-size: 9px; font-weight: 800; color: #92400E; text-transform: uppercase; }
@@ -599,6 +626,7 @@
       background: var(--bg-card); border: 1.5px solid var(--border-light);
       border-radius: var(--radius-xl); padding: 22px; width: 100%; max-width: 360px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+      max-height: 85vh; overflow-y: auto;
     }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px; }
     .modal-title { font-size: 15px; font-weight: 800; color: #FFF; display: flex; align-items: center; gap: 8px; }
@@ -705,6 +733,12 @@
   </style>
 </head>
 <body>
+
+  <!-- BADGE DE CONFIRMATION ÉLÉGANT ✅ -->
+  <div id="toast-badge" class="toast-badge">
+    <span>✅</span>
+    <span id="toast-badge-text">Enregistré avec succès</span>
+  </div>
 
   <!-- CHÂSSIS APPLICATION -->
   <div class="app-frame">
@@ -1016,19 +1050,21 @@
         </div>
       </div>
 
+      <!-- PROGRESSION GÉNÉRALE EN POURCENTAGE 📊 -->
       <div class="progression-card-ztv">
-        <div class="prog-circle" id="circle-pct">0/20</div>
+        <div class="prog-circle" id="circle-pct">0%</div>
         <div style="flex:1;">
           <div style="font-size: 12px; font-weight: 800; text-transform: uppercase;">Progression Générale</div>
-          <div style="font-size: 11px; color: #64748B; margin-top:2px;" id="prog-desc">Renseignez vos moyennes par trimestre</div>
+          <div style="font-size: 11px; color: #09A63D; font-weight: 700; margin-top:2px;" id="prog-desc">Renseignez vos moyennes par trimestre</div>
           <div class="prog-bar-bg"><div class="prog-bar-fill" id="bar-fill"></div></div>
         </div>
       </div>
 
+      <!-- OBJECTIF : PASSER EN CLASSE SUPÉRIEURE 🎯 -->
       <div class="objective-banner" onclick="openModalObjectif()">
         <div>
           <div style="font-size: 11px; font-weight: 800; text-transform: uppercase;">🎯 Objectif : Passer en classe supérieure</div>
-          <div style="font-size: 9px; opacity: 0.9;">Voir les détails et conseils personnalisés</div>
+          <div style="font-size: 9.5px; opacity: 0.9; margin-top: 2px;">Voir les détails et conseils personnalisés</div>
         </div>
         <div style="font-size:14px;">➔</div>
       </div>
@@ -1148,6 +1184,19 @@
             </tr>
             <tr data-subject="Arts plastiques">
               <td>Arts plastiques</td>
+              <td><input type="number" class="inp-coef" value="1" oninput="calculerBulletin()" /></td>
+              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
+              <td class="tot-cell">-</td>
+            </tr>
+            <!-- NOUVELLES MATIÈRES AJOUTÉES 🎵 🚗 -->
+            <tr data-subject="Musique">
+              <td>🎵 Musique</td>
+              <td><input type="number" class="inp-coef" value="1" oninput="calculerBulletin()" /></td>
+              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
+              <td class="tot-cell">-</td>
+            </tr>
+            <tr data-subject="Conduite">
+              <td>🚗 Conduite</td>
               <td><input type="number" class="inp-coef" value="1" oninput="calculerBulletin()" /></td>
               <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
               <td class="tot-cell">-</td>
@@ -1304,17 +1353,17 @@
         <div id="orient-result-card" style="background:#111827; border:2px solid var(--orange-ztv); border-radius:var(--radius-xl); padding:20px; text-align:center; margin-bottom:18px;">
           <div style="font-size:11px; font-weight:800; color:var(--text-gray); text-transform:uppercase;">🎯 Moyenne d'Orientation Finale</div>
           <div style="font-size:32px; font-weight:900; color:var(--orange-ztv); margin:6px 0;" id="orient-score-val">-- / 20</div>
-          <div style="font-size:11px; font-weight:700; color:#A5B4FC;" id="orient-appreciation-lbl">Veuillez renseigner vos moyennes BEPC ci-dessous</div>
+          <div style="font-size:11px; font-weight:700; color:#A5B4FC;" id="orient-appreciation-lbl">Veuillez renseigner vos notes BEPC ci-dessous</div>
         </div>
 
-        <h3 style="font-size:13px; font-weight:800; color:#FFF; margin-bottom:12px;">📝 Saisie des moyennes du BEPC</h3>
+        <h3 style="font-size:13px; font-weight:800; color:#FFF; margin-bottom:12px;">📝 Saisie des notes du BEPC</h3>
 
         <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
           <div style="background:var(--bg-card); border:1px solid var(--border-light); border-radius:var(--radius-lg); padding:14px;">
             <div style="font-size:12px; font-weight:800; color:#FFF; margin-bottom:8px;">🇫🇷 Français (Coef. 2)</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:center;">
               <div style="font-size:10px; color:var(--text-gray);">Moy. Annuelle: <strong id="or-ma-fr" style="color:#FFF;">--</strong></div>
-              <div><input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-fr" placeholder="Moyenne BEPC /20" oninput="calculerMoyenneOrientation()" /></div>
+              <div><input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-fr" placeholder="Note BEPC /20" oninput="calculerMoyenneOrientation()" /></div>
             </div>
           </div>
 
@@ -1322,7 +1371,7 @@
             <div style="font-size:12px; font-weight:800; color:#FFF; margin-bottom:8px;">➗ Mathématiques (Coef. 2)</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:center;">
               <div style="font-size:10px; color:var(--text-gray);">Moy. Annuelle: <strong id="or-ma-ma" style="color:#FFF;">--</strong></div>
-              <div><input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-ma" placeholder="Moyenne BEPC /20" oninput="calculerMoyenneOrientation()" /></div>
+              <div><input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-ma" placeholder="Note BEPC /20" oninput="calculerMoyenneOrientation()" /></div>
             </div>
           </div>
 
@@ -1330,7 +1379,7 @@
             <div style="font-size:12px; font-weight:800; color:#FFF; margin-bottom:8px;">⚛️ Physique-Chimie (Coef. 1)</div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:center;">
               <div style="font-size:10px; color:var(--text-gray);">Moy. Annuelle: <strong id="or-ma-pc" style="color:#FFF;">--</strong></div>
-              <div><input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-pc" placeholder="Moyenne BEPC /20" oninput="calculerMoyenneOrientation()" /></div>
+              <div><input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-pc" placeholder="Note BEPC /20" oninput="calculerMoyenneOrientation()" /></div>
             </div>
           </div>
 
@@ -1343,6 +1392,51 @@
             </div>
           </div>
         </div>
+
+        <!-- 7. RÉCAPITULATIF DES 4 MATIÈRES -->
+        <h3 style="font-size:13px; font-weight:800; color:#FFF; margin-bottom:10px;">📊 Détail des 4 matières d'orientation</h3>
+        <table class="bulletin-table" style="margin-bottom: 24px;">
+          <thead>
+            <tr>
+              <th style="font-size:10px;">Matière</th>
+              <th style="font-size:10px;">Moy. Ann.</th>
+              <th style="font-size:10px;">BEPC</th>
+              <th style="font-size:10px;">Rés. /40</th>
+              <th style="font-size:10px;">Coef.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🇫🇷 Français</td>
+              <td id="recap-ma-fr">--</td>
+              <td id="recap-bepc-fr">--</td>
+              <td id="recap-tot-fr" style="font-weight:800; color:var(--orange-ztv);">--</td>
+              <td>2</td>
+            </tr>
+            <tr>
+              <td>➗ Maths</td>
+              <td id="recap-ma-ma">--</td>
+              <td id="recap-bepc-ma">--</td>
+              <td id="recap-tot-ma" style="font-weight:800; color:var(--orange-ztv);">--</td>
+              <td>2</td>
+            </tr>
+            <tr>
+              <td>⚛️ Phys.-Chimie</td>
+              <td id="recap-ma-pc">--</td>
+              <td id="recap-bepc-pc">--</td>
+              <td id="recap-tot-pc" style="font-weight:800; color:var(--orange-ztv);">--</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>🇬🇧 Anglais</td>
+              <td id="recap-ma-an">--</td>
+              <td id="recap-bepc-an">--</td>
+              <td id="recap-tot-an" style="font-weight:800; color:var(--orange-ztv);">--</td>
+              <td>1</td>
+            </tr>
+          </tbody>
+        </table>
+
       </div>
     </div>
 
@@ -1366,7 +1460,7 @@
 
   </div>
 
-  <!-- JAVASCRIPT & LOGIQUE DU PROJET -->
+  <!-- JAVASCRIPT & LOGIQUE COMPLÈTE -->
   <script>
     /* ==========================================================================
        1. INITIALISATION FIREBASE & CONFIGURATION
@@ -1406,6 +1500,19 @@
       if(schoolYrElem) schoolYrElem.innerText = schoolYr;
     };
 
+    /* BADGE DE CONFIRMATION ✅ */
+    function showToastBadge(message = "Opération réussie ✅") {
+      const toast = document.getElementById('toast-badge');
+      const toastText = document.getElementById('toast-badge-text');
+      if (toast && toastText) {
+        toastText.innerText = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2200);
+      }
+    }
+
     /* Routeur d'affichage */
     function switchPage(pageId) {
       document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
@@ -1417,7 +1524,141 @@
     }
 
     /* ==========================================================================
-       2. ESPACE ADMINISTRATEUR SÉCURISÉ & GESTION LIEN PARTICIPANTS
+       2. MODALES & POPUPS
+       ========================================================================== */
+    function openModal(title, htmlContent) {
+      document.getElementById('modal-title-text').innerText = title;
+      document.getElementById('modal-body-content').innerHTML = htmlContent;
+      document.getElementById('modal-container').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-container').classList.remove('active');
+    }
+
+    function openModalCreator() {
+      const html = `
+        <div style="text-align: center;">
+          <img src="https://i.postimg.cc/Z5t6ctQQ/file-000000008a6081f9a7552dfe57d5c70d.png" class="creator-photo-ring" />
+          <h3 style="font-size: 16px; font-weight: 800; color: #FFF;">Zakaria Niampa</h3>
+          <p style="font-size: 11px; color: var(--orange-ztv); font-weight: 700; margin-top:2px;">Fondateur & Développeur de ZTV Moyenne</p>
+          <p style="font-size: 12px; color: #9CA3AF; margin-top: 10px; line-height: 1.4;">
+            Conçu pour vous offrir un outil de calcul moderne, fiable, rapide et sécurisé.
+          </p>
+        </div>
+      `;
+      openModal("👑 Créateur de l'application", html);
+    }
+
+    function openModalResetRequest() {
+      const html = `
+        <p style="font-size:12px; color:var(--text-gray); margin-bottom:12px;">Veuillez renseigner votre Nom, Prénom et WhatsApp. Notre équipe réinitialisera votre accès rapidement.</p>
+        <div class="form-group"><input type="text" class="form-input" id="reset-nom" placeholder="Nom complet" /></div>
+        <div class="form-group"><input type="tel" class="form-input" id="reset-wa" placeholder="Numéro WhatsApp" /></div>
+        <button class="btn-main-green" onclick="sendResetRequest()">Envoyer la demande</button>
+      `;
+      openModal("🔐 Mot de passe oublié", html);
+    }
+
+    function sendResetRequest() {
+      const nom = document.getElementById('reset-nom').value.trim();
+      const wa = document.getElementById('reset-wa').value.trim();
+      if(!nom || !wa) { alert("Veuillez remplir les champs."); return; }
+      
+      db.collection('passwordResetRequests').add({
+        nom: nom, whatsapp: wa, status: 'En attente', timestamp: new Date()
+      }).then(() => {
+        closeModal();
+        showToastBadge("✅ Demande envoyée !");
+      });
+    }
+
+    /* 6. OBJECTIF : PASSER EN CLASSE SUPÉRIEURE 🎯 (DYNAMIQUE) */
+    function openModalObjectif() {
+      const t1 = trimestresData[1].moyenne;
+      const t2 = trimestresData[2].moyenne;
+      const t3 = trimestresData[3].moyenne;
+
+      let msg = "";
+      let targetScoreHTML = "";
+
+      if (t1 === null && t2 === null && t3 === null) {
+        msg = "Veuillez renseigner au moins un trimestre pour obtenir des conseils personnalisés.";
+      } else if (t1 !== null && t2 !== null && t3 !== null) {
+        const ann = (t1 + t2 + t3) / 3;
+        if (ann >= 10) {
+          msg = `🎉 Félicitations ! Votre moyenne annuelle actuelle de <strong>${ann.toFixed(2)}/20</strong> vous permet de passer en classe supérieure.`;
+        } else {
+          msg = `⚠️ Votre moyenne annuelle de <strong>${ann.toFixed(2)}/20</strong> est inférieure à 10/20. Redoublez d'efforts pour l'année prochaine !`;
+        }
+      } else if (t1 !== null && t2 !== null && t3 === null) {
+        const necessaire = 30 - (t1 + t2);
+        if (necessaire <= 0) {
+          msg = `🎯 Félicitations ! Vos deux premiers trimestres vous garantissent déjà le passage (passage déjà acquis).`;
+        } else if (necessaire > 20) {
+          msg = `⚠️ Le passage en classe supérieure nécessite au moins 10/20 de moyenne annuelle. Même avec un 20/20 au T3, la moyenne minimale sera difficile à atteindre. Donnez le meilleur de vous-même !`;
+        } else {
+          targetScoreHTML = `
+            <div style="background:#111827; border:1px solid var(--orange-ztv); border-radius:12px; padding:12px; margin:10px 0; text-align:center;">
+              <div style="font-size:10px; color:var(--text-gray); text-transform:uppercase;">Note minimale visée au 3e trimestre</div>
+              <div style="font-size:22px; font-weight:900; color:var(--orange-ztv); margin-top:2px;">${necessaire.toFixed(2)} / 20</div>
+            </div>
+          `;
+          msg = `🎯 Pour atteindre la moyenne minimale nécessaire au passage (10/20), vous devez viser au minimum <strong>${necessaire.toFixed(2)}/20</strong> au 3ᵉ trimestre.`;
+        }
+      } else if (t1 !== null && t2 === null && t3 === null) {
+        const necessaireDeuxTrims = (30 - t1) / 2;
+        msg = `🎯 Pour garantir votre passage en classe supérieure, vous devez maintenir une moyenne d'au moins <strong>${Math.max(0, necessaireDeuxTrims).toFixed(2)}/20</strong> sur les T2 et T3.`;
+      }
+
+      // Identification des matières les plus faibles
+      let subjectAverages = {};
+      [1, 2, 3].forEach(t => {
+        if (trimestresData[t].subjects) {
+          for (let sub in trimestresData[t].subjects) {
+            if (!subjectAverages[sub]) subjectAverages[sub] = [];
+            subjectAverages[sub].push(trimestresData[t].subjects[sub].note);
+          }
+        }
+      });
+
+      let weakSubjectsList = [];
+      for (let sub in subjectAverages) {
+        let avg = subjectAverages[sub].reduce((a, b) => a + b, 0) / subjectAverages[sub].length;
+        weakSubjectsList.push({ name: sub, avg: avg });
+      }
+
+      weakSubjectsList.sort((a, b) => a.avg - b.avg);
+
+      let weakHTML = "";
+      if (weakSubjectsList.length > 0) {
+        weakHTML = `<div style="margin-top:14px; text-align:left;">
+          <h4 style="font-size:12px; font-weight:800; color:#EF4444; margin-bottom:8px;">📚 Matières à améliorer en priorité :</h4>
+          <div style="display:flex; flex-direction:column; gap:6px;">`;
+        weakSubjectsList.slice(0, 3).forEach(item => {
+          weakHTML += `
+            <div style="background:#111827; border:1px solid var(--border-light); padding:8px 12px; border-radius:8px; display:flex; justify-space-between; align-items:center;">
+              <span style="font-size:12px; font-weight:700;">${item.name}</span>
+              <span style="font-size:12px; font-weight:900; color:${item.avg < 10 ? '#EF4444' : '#FF8C00'};">${item.avg.toFixed(2)}/20</span>
+            </div>
+          `;
+        });
+        weakHTML += `</div></div>`;
+      }
+
+      const modalContent = `
+        <div style="text-align:left; font-size:12px; line-height:1.5;">
+          ${msg}
+          ${targetScoreHTML}
+          ${weakHTML}
+        </div>
+      `;
+
+      openModal("🎯 Objectif & Conseils Personnalisés", modalContent);
+    }
+
+    /* ==========================================================================
+       3. ESPACE ADMINISTRATEUR SÉCURISÉ & GESTION LIEN PARTICIPANTS
        ========================================================================== */
     function actionAdminLogin() {
       const u = document.getElementById('admin-user').value.trim();
@@ -1427,6 +1668,7 @@
       if(u === 'ZakariaTV' && p === '55250031') {
         isAdmin = true;
         err.style.display = 'none';
+        showToastBadge("✅ Connexion Admin réussie");
         switchPage('view-admin-dashboard');
         loadAdminStats();
       } else {
@@ -1534,7 +1776,7 @@
 
     function toggleUserAccount(docId, newStatus) {
       db.collection('users').doc(docId).update({ active: newStatus }).then(() => {
-        alert(newStatus ? "Le compte a été réactivé !" : "Le compte a été désactivé. L'élève peut désormais se réinscrire si besoin.");
+        showToastBadge("✅ Compte mis à jour");
         fetchAdminEleves();
         loadAdminStats();
       });
@@ -1566,7 +1808,7 @@
 
     function resetStudentPassword(reqId, whatsapp) {
       db.collection('passwordResetRequests').doc(reqId).update({ status: 'Traité' }).then(() => {
-        alert("Demande marquée comme traitée.");
+        showToastBadge("✅ Demande traitée");
         fetchAdminPwdRequests();
       });
     }
@@ -1625,18 +1867,18 @@
       const input = document.getElementById('student-app-link');
       input.select();
       document.execCommand("copy");
-      alert("Lien des participants copié avec succès !");
+      showToastBadge("✅ Lien copié !");
     }
 
     function updateLinkFirebase() {
       const newUrl = document.getElementById('student-app-link').value;
       db.collection('settings').doc('appConfig').set({ studentAppUrl: newUrl }, { merge: true }).then(() => {
-        alert("Lien mis à jour avec succès dans Firebase !");
+        showToastBadge("✅ Lien mis à jour !");
       });
     }
 
     /* ==========================================================================
-       3. LOGIQUE PARTICIPANTS & SYNCHRONISATION FIREBASE COMPLÈTE
+       4. LOGIQUE PARTICIPANTS & OPTIMISATION AUTHENTIFICATION RAPIDE ⚡
        ========================================================================== */
     function switchAuthTab(tab) {
       const loginBtn = document.getElementById('tab-login-btn');
@@ -1669,10 +1911,11 @@
         return;
       }
 
-      // Interrogation directe dans Firebase
+      // Requête optimisée
       db.collection('users')
         .where('pass', '==', passInput)
         .where('active', '==', true)
+        .limit(10)
         .get()
         .then(snap => {
           let userMatch = null;
@@ -1692,14 +1935,15 @@
             updateProfileDisplay();
             updateAppPhotos();
             checkClasse3emeUI();
+            showToastBadge("✅ Connexion réussie");
             switchPage('view-dashboard');
             actualiserMoyennesGlobales();
           } else {
             errBox.innerText = "Vos informations sont incorrectes ou votre compte a été désactivé.";
             errBox.style.display = 'block';
           }
-        }).catch(err => {
-          errBox.innerText = "Erreur de connexion à Firebase. Veuillez réessayer.";
+        }).catch(() => {
+          errBox.innerText = "Erreur de connexion. Veuillez réessayer.";
           errBox.style.display = 'block';
         });
     }
@@ -1720,7 +1964,7 @@
 
       const fullname = (nom + " " + prenom).trim();
 
-      // Vérification des comptes actifs existants dans Firebase
+      // Vérification rapide anti-doublon
       db.collection('users')
         .where('active', '==', true)
         .get()
@@ -1737,11 +1981,10 @@
           if(isDuplicate) {
             errBox.innerText = "Ces informations ont déjà un compte actif. Veuillez vous connecter.";
             errBox.style.display = 'block';
-            setTimeout(() => switchAuthTab('login'), 2500);
+            setTimeout(() => switchAuthTab('login'), 2200);
             return;
           }
 
-          // Inscription et sauvegarde dans Firebase
           const photoMsg = document.getElementById('photo-preview-msg').innerText;
           const photoSrc = photoMsg.includes("✓") && currentUser && currentUser.photo 
             ? currentUser.photo 
@@ -1773,6 +2016,7 @@
             updateProfileDisplay();
             updateAppPhotos();
             checkClasse3emeUI();
+            showToastBadge("✅ Compte créé avec succès");
             switchPage('view-dashboard');
             actualiserMoyennesGlobales();
           });
@@ -1845,6 +2089,7 @@
         2: { points: 0, coefs: 0, moyenne: null, subjects: {} },
         3: { points: 0, coefs: 0, moyenne: null, subjects: {} }
       };
+      showToastBadge("✅ Déconnexion réussie");
       switchPage('view-auth');
     }
 
@@ -1934,10 +2179,12 @@
         });
       }
 
+      showToastBadge("✅ Saisie enregistrée");
       actualiserMoyennesGlobales();
       switchPage('view-dashboard');
     }
 
+    /* 3. PROGRESSION GÉNÉRALE CALCULÉE EN POURCENTAGE (%) 📊 */
     function actualiserMoyennesGlobales() {
       const t1 = trimestresData[1].moyenne;
       const t2 = trimestresData[2].moyenne;
@@ -1950,6 +2197,48 @@
       document.getElementById('prof-t1-val').innerText = (t1 !== null) ? t1.toFixed(2) + " /20" : "-- /20";
       document.getElementById('prof-t2-val').innerText = (t2 !== null) ? t2.toFixed(2) + " /20" : "-- /20";
       document.getElementById('prof-t3-val').innerText = (t3 !== null) ? t3.toFixed(2) + " /20" : "-- /20";
+
+      let validTrims = [];
+      if (t1 !== null) validTrims.push(t1);
+      if (t2 !== null) validTrims.push(t2);
+      if (t3 !== null) validTrims.push(t3);
+
+      if (validTrims.length > 0) {
+        const currentAvg = validTrims.reduce((a, b) => a + b, 0) / validTrims.length;
+        const pct = Math.min(100, Math.max(0, Math.round((currentAvg / 20) * 100)));
+
+        document.getElementById('circle-pct').innerText = pct + " %";
+        document.getElementById('bar-fill').style.width = pct + "%";
+
+        let descText = "";
+        let colorBar = "#EF4444";
+
+        if (pct < 45) {
+          descText = "Progression faible — redouble d'efforts !";
+          colorBar = "#EF4444";
+        } else if (pct < 60) {
+          descText = "Progression moyenne — tu peux faire mieux !";
+          colorBar = "#FF8C00";
+        } else if (pct < 75) {
+          descText = "Bonne progression — continue tes efforts !";
+          colorBar = "#10B981";
+        } else if (pct < 85) {
+          descText = "Très bonne progression — excellent travail !";
+          colorBar = "#09A63D";
+        } else {
+          descText = "Excellente performance — félicitations !";
+          colorBar = "#818CF8";
+        }
+
+        document.getElementById('prog-desc').innerText = descText;
+        document.getElementById('prog-desc').style.color = colorBar;
+        document.getElementById('bar-fill').style.background = colorBar;
+        document.getElementById('circle-pct').style.borderColor = colorBar;
+      } else {
+        document.getElementById('circle-pct').innerText = "0 %";
+        document.getElementById('bar-fill').style.width = "0%";
+        document.getElementById('prog-desc').innerText = "Renseignez vos moyennes par trimestre";
+      }
 
       if(t1 !== null && t2 !== null && t3 !== null) {
         const moyAnnuelle = (t1 + t2 + t3) / 3;
@@ -1974,321 +2263,141 @@
             });
           }
         }
-      } else {
-        document.getElementById('val-annual').innerText = "-- /20";
-        document.getElementById('prof-annuel-val').innerText = "-- /20";
-        document.getElementById('val-mention').innerText = "--";
-        document.getElementById('prof-mention-val').innerText = "--";
-        document.getElementById('val-decision').innerText = "--";
-      }
-
-      let availableMoyennes = [];
-      if(t1 !== null) availableMoyennes.push(t1);
-      if(t2 !== null) availableMoyennes.push(t2);
-      if(t3 !== null) availableMoyennes.push(t3);
-
-      if(availableMoyennes.length > 0) {
-        const sumMoy = availableMoyennes.reduce((a, b) => a + b, 0);
-        const avgCurrent = sumMoy / availableMoyennes.length;
-        const pctFill = Math.min(Math.max((avgCurrent / 20) * 100, 0), 100);
-
-        document.getElementById('circle-pct').innerText = avgCurrent.toFixed(2) + "/20";
-        const barFill = document.getElementById('bar-fill');
-        const circlePct = document.getElementById('circle-pct');
-        barFill.style.width = pctFill + "%";
-
-        let colorCode = "#EF4444";
-        if(avgCurrent >= 14) colorCode = "#09A63D";
-        else if(avgCurrent >= 10) colorCode = "#FF8C00";
-
-        barFill.style.background = colorCode;
-        circlePct.style.borderColor = colorCode;
-
-        document.getElementById('prog-desc').innerText = "Moyenne actuelle basée sur " + availableMoyennes.length + " trimestre(s)";
-      } else {
-        document.getElementById('circle-pct').innerText = "0/20";
-        document.getElementById('bar-fill').style.width = "0%";
-        document.getElementById('bar-fill').style.background = "#EF4444";
-        document.getElementById('circle-pct').style.borderColor = "#EF4444";
-        document.getElementById('prog-desc').innerText = "Saisissez au moins un trimestre";
       }
     }
 
-    function openModalObjectif() {
-      const t1 = trimestresData[1].moyenne;
-      const t2 = trimestresData[2].moyenne;
-      const t3 = trimestresData[3].moyenne;
-
-      let htmlContent = "";
-      let weakSubjects = [];
-
+    /* 8. RÉCUPÉRATION AUTOMATIQUE DES NOTES TRIMESTRIELLES POUR L'ORIENTATION ⚠️ */
+    function getMoyenneAnnuelleSub(subjectName) {
+      let notes = [];
       [1, 2, 3].forEach(t => {
-        const subs = trimestresData[t].subjects;
-        for(let s in subs) {
-          if(subs[s].note < 10 && !weakSubjects.includes(s)) {
-            weakSubjects.push(s);
-          }
+        if(trimestresData[t].subjects && trimestresData[t].subjects[subjectName] !== undefined) {
+          notes.push(trimestresData[t].subjects[subjectName].note);
         }
       });
-
-      if(t1 === null && t2 === null && t3 === null) {
-        htmlContent = `
-          <div style="text-align:center; padding:10px 0;">
-            <p style="font-size:13px; color:#FFF; line-height:1.5;">Veuillez d'abord saisir vos moyennes d'au moins un trimestre pour générer un objectif personnalisé.</p>
-            <button class="btn-main-green" style="margin-top:16px;" onclick="closeModal()">Compris</button>
-          </div>
-        `;
-      } else if(t1 !== null && t2 !== null && t3 !== null) {
-        const moyAnnuelle = (t1 + t2 + t3) / 3;
-        if(moyAnnuelle >= 10) {
-          htmlContent = `
-            <div style="padding:10px 0;">
-              <p style="font-size:13px; color:#10B981; font-weight:800; text-align:center; margin-bottom:12px;">🎉 Félicitations ! Votre moyenne annuelle est de ${moyAnnuelle.toFixed(2)}/20.</p>
-              <p style="font-size:12px; color:#FFF; line-height:1.5;">Vous remplissez les conditions pour passer en classe supérieure. Continuez ainsi !</p>
-            </div>
-          `;
-        } else {
-          htmlContent = `
-            <div style="padding:10px 0;">
-              <p style="font-size:13px; color:#EF4444; font-weight:800; text-align:center; margin-bottom:12px;">⚠️ Moyenne annuelle insuffisante (${moyAnnuelle.toFixed(2)}/20)</p>
-              ${weakSubjects.length > 0 ? `<p style="font-size:11px; color:var(--orange-ztv); font-weight:700;">Matières prioritaires : ${weakSubjects.join(", ")}.</p>` : ''}
-            </div>
-          `;
-        }
-      } else {
-        let count = 0, sum = 0;
-        if(t1 !== null) { sum += t1; count++; }
-        if(t2 !== null) { sum += t2; count++; }
-
-        const reqTotal = 30 - sum;
-        if(count === 1) {
-          const reqPerTrim = reqTotal / 2;
-          htmlContent = `
-            <div style="padding:10px 0;">
-              <p style="font-size:13px; color:#FFF; line-height:1.5; margin-bottom:12px;">
-                Objectif : Visez une moyenne de <strong>${reqPerTrim.toFixed(2)}/20</strong> sur chacun des deux trimestres restants.
-              </p>
-            </div>
-          `;
-        } else if(count === 2) {
-          htmlContent = `
-            <div style="padding:10px 0;">
-              <p style="font-size:13px; color:#FFF; line-height:1.5; margin-bottom:12px;">
-                <strong>Objectif 3e trimestre :</strong> Pour passer, il vous faut au minimum <strong>${reqTotal.toFixed(2)}/20</strong> au T3.
-              </p>
-            </div>
-          `;
-        }
-      }
-
-      openModal("🎯 Objectif de Passage", htmlContent);
-    }
-
-    function meObtenirMoyennePeriode(periode) {
-      if(periode === 't1') return trimestresData[1].moyenne;
-      if(periode === 't2') return trimestresData[2].moyenne;
-      if(periode === 't3') return trimestresData[3].moyenne;
-      
-      const t1 = trimestresData[1].moyenne;
-      const t2 = trimestresData[2].moyenne;
-      const t3 = trimestresData[3].moyenne;
-
-      return (t1 !== null && t2 !== null && t3 !== null) ? ((t1 + t2 + t3) / 3) : null;
-    }
-
-    function ouvrirTableauHonneurAccueil() {
-      let moy = meObtenirMoyennePeriode('annuel');
-      if(moy !== null && moy >= 13.0) {
-        changeCertifPeriod('annuel');
-        switchPage('view-certif');
-      } else {
-        const dispMoy = (moy !== null) ? moy.toFixed(2) : "--";
-        const htmlMsg = `
-          <div style="text-align:center; padding:10px 0;">
-            <div style="font-size:42px; margin-bottom:10px;">🏆</div>
-            <p style="font-size:13px; color:#FFF; line-height:1.5; margin-bottom:16px;">
-              Votre moyenne annuelle est de <strong>${dispMoy} / 20</strong>.<br><br>
-              Elle ne vous permet pas encore d'accéder au Tableau d'honneur (Moyenne minimale : <strong>13/20</strong>).
-            </p>
-            <button class="btn-main-green" onclick="closeModal()">Compris</button>
-          </div>
-        `;
-        openModal("🏆 Tableau d'honneur", htmlMsg);
-      }
-    }
-
-    function changeCertifPeriod(period) {
-      selectedCertifPeriod = period;
-      document.querySelectorAll('.certif-tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById('cert-tab-' + period).classList.add('active');
-
-      const moy = meObtenirMoyennePeriode(period);
-      const periodNames = { 'annuel': 'Annuel', 't1': '1er Trimestre', 't2': '2e Trimestre', 't3': '3e Trimestre' };
-
-      if(moy !== null && moy >= 13.0) {
-        document.getElementById('cert-period-lbl').innerText = "Moyenne " + periodNames[period];
-        document.getElementById('cert-annual-val').innerText = moy.toFixed(2) + " /20";
-        document.getElementById('cert-mention-lbl').innerText = meGetMention(moy);
-      } else {
-        const dispMoy = (moy !== null) ? moy.toFixed(2) : "0.00";
-        const htmlMsg = `
-          <div style="text-align:center; padding:10px 0;">
-            <div style="font-size:42px; margin-bottom:10px;">🏆</div>
-            <p style="font-size:13px; color:#FFF; line-height:1.5; margin-bottom:16px;">
-              Votre moyenne pour le <strong>${periodNames[period]}</strong> est de <strong>${dispMoy} / 20</strong>.<br><br>
-              Elle ne vous permet pas d'accéder au Tableau d'honneur (Seuil : 13/20).
-            </p>
-            <button class="btn-main-green" onclick="closeModal(); switchPage('view-dashboard');">Compris</button>
-          </div>
-        `;
-        openModal("🏆 Tableau d'honneur", htmlMsg);
-      }
+      if(notes.length === 0) return null;
+      return notes.reduce((a, b) => a + b, 0) / notes.length;
     }
 
     function preparerPageOrientation() {
-      const matieresTarget = ["Français", "Mathématiques", "Physique - Chimie", "Anglais"];
-      let maResults = {};
+      const maFr = getMoyenneAnnuelleSub("Français");
+      const maMa = getMoyenneAnnuelleSub("Mathématiques");
+      const maPc = getMoyenneAnnuelleSub("Physique - Chimie");
+      const maAn = getMoyenneAnnuelleSub("Anglais");
 
-      matieresTarget.forEach(sub => {
-        const t1Note = trimestresData[1].subjects[sub]?.note;
-        const t2Note = trimestresData[2].subjects[sub]?.note;
-        const t3Note = trimestresData[3].subjects[sub]?.note;
+      document.getElementById('or-ma-fr').innerText = (maFr !== null) ? maFr.toFixed(2) + "/20" : "Non renseigné";
+      document.getElementById('or-ma-ma').innerText = (maMa !== null) ? maMa.toFixed(2) + "/20" : "Non renseigné";
+      document.getElementById('or-ma-pc').innerText = (maPc !== null) ? maPc.toFixed(2) + "/20" : "Non renseigné";
+      document.getElementById('or-ma-an').innerText = (maAn !== null) ? maAn.toFixed(2) + "/20" : "Non renseigné";
 
-        if(t1Note !== undefined && t2Note !== undefined && t3Note !== undefined) {
-          maResults[sub] = (t1Note + (t2Note * 2) + (t3Note * 2)) / 5;
-        } else {
-          maResults[sub] = null;
-        }
-      });
-
-      document.getElementById('or-ma-fr').innerText = (maResults["Français"] !== null) ? maResults["Français"].toFixed(2) + " /20" : "Manquante";
-      document.getElementById('or-ma-ma').innerText = (maResults["Mathématiques"] !== null) ? maResults["Mathématiques"].toFixed(2) + " /20" : "Manquante";
-      document.getElementById('or-ma-pc').innerText = (maResults["Physique - Chimie"] !== null) ? maResults["Physique - Chimie"].toFixed(2) + " /20" : "Manquante";
-      document.getElementById('or-ma-an').innerText = (maResults["Anglais"] !== null) ? maResults["Anglais"].toFixed(2) + " /20" : "Manquante";
+      document.getElementById('recap-ma-fr').innerText = (maFr !== null) ? maFr.toFixed(2) : "--";
+      document.getElementById('recap-ma-ma').innerText = (maMa !== null) ? maMa.toFixed(2) : "--";
+      document.getElementById('recap-ma-pc').innerText = (maPc !== null) ? maPc.toFixed(2) : "--";
+      document.getElementById('recap-ma-an').innerText = (maAn !== null) ? maAn.toFixed(2) : "--";
 
       calculerMoyenneOrientation();
     }
 
     function calculerMoyenneOrientation() {
-      const bepcFr = parseFloat(document.getElementById('bepc-note-fr').value);
-      const bepcMa = parseFloat(document.getElementById('bepc-note-ma').value);
-      const bepcPc = parseFloat(document.getElementById('bepc-note-pc').value);
-      const bepcAnE = parseFloat(document.getElementById('bepc-an-ecrit').value);
-      const bepcAnO = parseFloat(document.getElementById('bepc-an-oral').value);
+      const maFr = getMoyenneAnnuelleSub("Français") || 0;
+      const maMa = getMoyenneAnnuelleSub("Mathématiques") || 0;
+      const maPc = getMoyenneAnnuelleSub("Physique - Chimie") || 0;
+      const maAn = getMoyenneAnnuelleSub("Anglais") || 0;
 
-      let meanAnglais = (!isNaN(bepcAnE) && !isNaN(bepcAnO)) ? (bepcAnE + bepcAnO) / 2 : null;
+      const bepcFr = parseFloat(document.getElementById('bepc-note-fr').value) || 0;
+      const bepcMa = parseFloat(document.getElementById('bepc-note-ma').value) || 0;
+      const bepcPc = parseFloat(document.getElementById('bepc-note-pc').value) || 0;
+      const bepcAnEcrit = parseFloat(document.getElementById('bepc-an-ecrit').value) || 0;
+      const bepcAnOral = parseFloat(document.getElementById('bepc-an-oral').value) || 0;
 
-      const getMA = (sub) => {
-        const t1 = trimestresData[1].subjects[sub]?.note;
-        const t2 = trimestresData[2].subjects[sub]?.note;
-        const t3 = trimestresData[3].subjects[sub]?.note;
-        return (t1 !== undefined && t2 !== undefined && t3 !== undefined) ? ((t1 + (t2*2) + (t3*2))/5) : null;
-      };
+      const bepcAnMoy = (bepcAnEcrit + bepcAnOral) / 2;
 
-      const maFr = getMA("Français");
-      const maMa = getMA("Mathématiques");
-      const maPc = getMA("Physique - Chimie");
-      const maAn = getMA("Anglais");
+      document.getElementById('recap-bepc-fr').innerText = bepcFr ? bepcFr.toFixed(2) : "--";
+      document.getElementById('recap-bepc-ma').innerText = bepcMa ? bepcMa.toFixed(2) : "--";
+      document.getElementById('recap-bepc-pc').innerText = bepcPc ? bepcPc.toFixed(2) : "--";
+      document.getElementById('recap-bepc-an').innerText = (bepcAnEcrit || bepcAnOral) ? bepcAnMoy.toFixed(2) : "--";
 
-      if(maFr !== null && maMa !== null && maPc !== null && maAn !== null &&
-         !isNaN(bepcFr) && !isNaN(bepcMa) && !isNaN(bepcPc) && meanAnglais !== null) {
-        
-        const totFr = maFr + bepcFr;
-        const totMa = maMa + bepcMa;
-        const totPc = maPc + bepcPc;
-        const totAn = maAn + meanAnglais;
+      const totFr = maFr + bepcFr;
+      const totMa = maMa + bepcMa;
+      const totPc = maPc + bepcPc;
+      const totAn = maAn + bepcAnMoy;
 
-        const totalPondere = (totFr * 2) + (totMa * 2) + (totPc * 1) + (totAn * 1);
-        const mo = totalPondere / 12;
+      document.getElementById('recap-tot-fr').innerText = totFr ? totFr.toFixed(2) : "--";
+      document.getElementById('recap-tot-ma').innerText = totMa ? totMa.toFixed(2) : "--";
+      document.getElementById('recap-tot-pc').innerText = totPc ? totPc.toFixed(2) : "--";
+      document.getElementById('recap-tot-an').innerText = totAn ? totAn.toFixed(2) : "--";
 
-        document.getElementById('orient-score-val').innerText = mo.toFixed(2) + " / 20";
-        let app = "🟢 Très bon profil d'orientation";
-        if(mo < 10) app = "🔴 Résultat insuffisant";
-        else if(mo < 12) app = "🟠 À surveiller";
-        document.getElementById('orient-appreciation-lbl').innerText = app;
+      // Calcul officiel de la moyenne d'orientation
+      const totalPoints = (totFr * 2) + (totMa * 2) + (totPc * 1) + (totAn * 1); // Total /240
+      const scoreOrientation = totalPoints / 12; // Ramenée sur /20
 
-        if(currentUser && currentUser.id) {
+      if (bepcFr > 0 || bepcMa > 0) {
+        document.getElementById('orient-score-val').innerText = scoreOrientation.toFixed(2) + " / 20";
+        let appreciation = "";
+        if (scoreOrientation >= 14) appreciation = "🟢 Excellent dossier d'orientation vers la Seconde A/C";
+        else if (scoreOrientation >= 10) appreciation = "🟡 Dossier d'orientation Favorable";
+        else appreciation = "🔴 Risque de non-orientation - Donnez le maximum au BEPC !";
+        document.getElementById('orient-appreciation-lbl').innerText = appreciation;
+
+        if (currentUser && currentUser.id) {
           db.collection('orientations').add({
             studentId: currentUser.id,
             studentName: currentUser.fullname,
-            score: mo.toFixed(2),
-            date: new Date()
+            score: scoreOrientation.toFixed(2),
+            timestamp: new Date()
           });
         }
-      } else {
-        document.getElementById('orient-score-val').innerText = "-- / 20";
-        document.getElementById('orient-appreciation-lbl').innerText = "Renseignez toutes les moyennes BEPC nécessaires";
       }
     }
 
-    function openModalResetRequest() {
-      const html = `
-        <div class="form-group"><input type="text" id="req-nom" class="form-input" placeholder="Votre Nom" /></div>
-        <div class="form-group"><input type="text" id="req-prenom" class="form-input" placeholder="Votre Prénom" /></div>
-        <div class="form-group"><input type="tel" id="req-wa" class="form-input" placeholder="Numéro WhatsApp" /></div>
-        <button class="btn-main-green" onclick="submitResetRequest()">Envoyer la demande</button>
-      `;
-      openModal("Demande de réinitialisation", html);
-    }
+    function ouvrirTableauHonneurAccueil() {
+      const t1 = trimestresData[1].moyenne;
+      const t2 = trimestresData[2].moyenne;
+      const t3 = trimestresData[3].moyenne;
 
-    function submitResetRequest() {
-      const nom = document.getElementById('req-nom').value;
-      const prenom = document.getElementById('req-prenom').value;
-      const wa = document.getElementById('req-wa').value;
-
-      db.collection('passwordResetRequests').add({
-        nom, prenom, whatsapp: wa, status: 'En attente', date: new Date().toISOString()
-      }).then(() => {
-        closeModal();
-        alert("Votre demande a été transmise à l'administrateur.");
-      });
-    }
-
-    function openModal(title, htmlContent) {
-      document.getElementById('modal-title-text').innerHTML = title;
-      document.getElementById('modal-body-content').innerHTML = htmlContent;
-      document.getElementById('modal-container').classList.add('active');
-    }
-
-    function closeModal() {
-      document.getElementById('modal-container').classList.remove('active');
-    }
-
-    function openModalCreator() {
-      const html = `
-        <div style="text-align:center; padding:10px 0;">
-          <img src="https://i.postimg.cc/nLRGRY0z/file-000000009dc8724699d54da957936110.png" class="creator-photo-ring" alt="Niampa Zakaria" />
-          <h3 style="font-size:17px; font-weight:900; color:#FFF;">Niampa Zakaria</h3>
-          <p style="font-size:12px; color:var(--orange-ztv); font-weight:800; margin-top:2px;">Créateur de ZTV</p>
-          
-          <div style="margin-top:16px; background:#111827; border:1px solid var(--border-light); border-radius:16px; padding:14px; text-align:left; display:flex; flex-direction:column; gap:8px;">
-            <div style="font-size:11px; color:#FFF;">🎓 <strong>Statut :</strong> Élève / Étudiant passionné</div>
-            <div style="font-size:11px; color:#FFF;">🏫 <strong>Établissement :</strong> Académie ZTV</div>
-            <div style="font-size:11px; color:#FFF;">🎂 <strong>Âge :</strong> Jeune créateur</div>
-            <div style="font-size:11px; color:#FFF;">🎥 <strong>Activité :</strong> Développement web & Éducation</div>
-            <div style="font-size:11px; color:#FFF;">🖥️ <strong>Nom de marque :</strong> ZTV</div>
-            <div style="font-size:11px; color:#FFF;">🎵 <strong>Compte TikTok :</strong> @ztv_officiel</div>
-          </div>
-
-          <p style="font-size:11px; color:#CBD5E1; line-height:1.45; margin-top:14px; text-align:center;">
-            ZTV Moyenne permet aux élèves de calculer facilement leur moyenne du 1er, 2e et 3e trimestre, ainsi que leur moyenne annuelle.
-          </p>
-
-          <button class="btn-main-green" style="margin-top:16px;" onclick="closeModal()">Fermer</button>
-        </div>
-      `;
-      openModal("👑 Créateur de l'application", html);
-    }
-
-    /* Détection automatique du mode à l'ouverture */
-    window.addEventListener('DOMContentLoaded', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      if(urlParams.get('mode') === 'student') {
-        switchPage('view-auth');
-      } else {
-        switchPage('view-admin-login');
+      let moyAnnuelle = null;
+      if (t1 !== null && t2 !== null && t3 !== null) {
+        moyAnnuelle = (t1 + t2 + t3) / 3;
       }
-    });
+
+      if (moyAnnuelle === null) {
+        alert("Veuillez remplir vos 3 trimestres pour afficher le Tableau d'Honneur Annuel.");
+        return;
+      }
+
+      if (moyAnnuelle < 12.0) {
+        alert("Votre moyenne annuelle (" + moyAnnuelle.toFixed(2) + "/20) est inférieure à 12,00. Travaillez encore pour obtenir le Tableau d'Honneur !");
+        return;
+      }
+
+      changeCertifPeriod('annuel');
+      switchPage('view-certif');
+    }
+
+    function changeCertifPeriod(period) {
+      selectedCertifPeriod = period;
+      document.querySelectorAll('.certif-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('cert-tab-' + period);
+      if(activeBtn) activeBtn.classList.add('active');
+
+      let val = null;
+      let lblText = "Moyenne Annuelle";
+
+      if(period === 'annuel') {
+        const t1 = trimestresData[1].moyenne, t2 = trimestresData[2].moyenne, t3 = trimestresData[3].moyenne;
+        if(t1 !== null && t2 !== null && t3 !== null) val = (t1 + t2 + t3) / 3;
+        lblText = "Moyenne Annuelle";
+      } else if(period === 't1') {
+        val = trimestresData[1].moyenne; lblText = "Moyenne 1er Trimestre";
+      } else if(period === 't2') {
+        val = trimestresData[2].moyenne; lblText = "Moyenne 2e Trimestre";
+      } else if(period === 't3') {
+        val = trimestresData[3].moyenne; lblText = "Moyenne 3e Trimestre";
+      }
+
+      document.getElementById('cert-period-lbl').innerText = lblText;
+      document.getElementById('cert-annual-val').innerText = (val !== null) ? val.toFixed(2) + " /20" : "-- /20";
+      document.getElementById('cert-mention-lbl').innerText = meGetMention(val);
+    }
   </script>
 </body>
 </html>
