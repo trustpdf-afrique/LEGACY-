@@ -10,6 +10,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,700&display=swap" rel="stylesheet">
 
+  <!-- Firebase Scripts (Compat v9) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
   <style>
     :root {
       --bg-main: #090D1A;
@@ -627,7 +631,7 @@
     .cert-badge-box {
       background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
       border: 1.5px solid #F59E0B; border-radius: 12px; padding: 10px;
-      display: flex; justify-content: space-around; align-items: center;
+      display: flex; justify-style: space-around; align-items: center;
       margin: 14px 0; width: 100%;
     }
 
@@ -738,7 +742,7 @@
           </div>
 
           <div class="form-group">
-            <input type="password" class="form-input" id="login-pass" placeholder="Mot de passe" />
+            <input type="password" class="form-input" id="login-pass" placeholder="Mot de passe (5 chiffres)" />
           </div>
 
           <button class="btn-main-green" onclick="actionLogin()">
@@ -803,7 +807,7 @@
           </div>
 
           <div class="form-group">
-            <input type="password" class="form-input" id="reg-pass" placeholder="Mot de passe" />
+            <input type="password" class="form-input" id="reg-pass" placeholder="Mot de passe (5 chiffres)" maxlength="5" />
           </div>
 
           <button class="btn-main-green" onclick="actionRegister()">
@@ -1270,7 +1274,7 @@
           ⚠️ <strong>Calcul impossible pour le moment :</strong> Les trois trimestres doivent être renseignés dans l'application pour calculer la moyenne d'orientation.
         </div>
 
-        <!-- FORMULAIRE SAISIE NOTES BEPC (Ajustement du texte : "Note") -->
+        <!-- FORMULAIRE SAISIE NOTES BEPC -->
         <h3 style="font-size:13px; font-weight:800; color:#FFF; margin-bottom:12px;">📝 Saisie des notes du BEPC</h3>
 
         <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
@@ -1387,6 +1391,21 @@
   </div>
 
   <script>
+    // CONFIGURATION FIREBASE CLOUD FIRESTORE
+    const firebaseConfig = {
+      apiKey: "AIzaSyYourApiKeyHere",
+      authDomain: "ztv-concours.firebaseapp.com",
+      projectId: "ztv-concours",
+      storageBucket: "ztv-concours.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abcdef123456"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
     let activeTrimestre = 1;
     let selectedCertifPeriod = 'annuel';
 
@@ -1407,7 +1426,56 @@
       const yr = d.getFullYear();
       const schoolYr = (d.getMonth() >= 8) ? yr + "-" + (yr + 1) : (yr - 1) + "-" + yr;
       document.getElementById('cert-school-year').innerText = schoolYr;
+      
+      // Charger la base locale ou synchroniser si besoin
+      const localData = localStorage.getItem('ztv_users_data');
+      if(localData) {
+        try { registeredUsers = JSON.parse(localData); } catch(e) {}
+      }
     };
+
+    function saveLocal() {
+      localStorage.setItem('ztv_users_data', JSON.stringify(registeredUsers));
+    }
+
+    // SYNCHRONISATION ÉLÈVE VERS FIREBASE (Remontée Administrateur)
+    function syncUserToFirebase(user) {
+      if (!user || !user.fullname) return;
+
+      const docId = user.fullname.toLowerCase().replace(/\s+/g, '_');
+      
+      // Calcul du total des calculs effectués
+      let totalCalculs = 0;
+      if (user.trimestresData) {
+        [1, 2, 3].forEach(t => {
+          if (user.trimestresData[t] && user.trimestresData[t].moyenne !== null) {
+            totalCalculs++;
+          }
+        });
+      }
+      if (user.moyenneOrientation) totalCalculs++;
+
+      const payload = {
+        nom: user.nom || "",
+        prenom: user.prenom || "",
+        fullname: user.fullname,
+        pass: user.pass || "",
+        etablissement: user.etablissement || "",
+        classe: user.classe || "",
+        ville: user.ville || "",
+        pays: user.pays || "Côte d'Ivoire 🇨🇮",
+        whatsapp: user.whatsapp || "",
+        dateCreation: user.dateCreation || new Date().toLocaleDateString('fr-FR'),
+        photo: user.photo || "",
+        trimestresData: user.trimestresData || trimestresData,
+        calculsEffectues: totalCalculs,
+        derniereMiseAJour: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      db.collection("eleves").doc(docId).set(payload, { merge: true })
+        .then(() => { console.log("Données élève synchronisées avec Firebase"); })
+        .catch((err) => { console.warn("Avertissement Synchro Firebase:", err); });
+    }
 
     // BADGE DISCRET DE CONFIRMATION
     function showToast(message) {
@@ -1454,6 +1522,8 @@
         reader.onload = function(e) {
           if(currentUser) {
             currentUser.photo = e.target.result;
+            saveLocal();
+            syncUserToFirebase(currentUser);
           }
           document.getElementById('photo-preview-msg').innerText = "✓ Photo sélectionnée : " + file.name;
           updateAppPhotos();
@@ -1517,6 +1587,7 @@
         checkClasse3emeUI();
         switchPage('view-dashboard');
         actualiserMoyennesGlobales();
+        syncUserToFirebase(currentUser);
         showToast("Confirmation réussie");
       } else {
         errBox.innerText = "Vos informations sont incorrectes. Veuillez vérifier vos informations et réessayer.";
@@ -1524,16 +1595,25 @@
       }
     }
 
+    /* INSCRIPTION AVEC RÈGLE STRICTE DU MOT DE PASSE (5 CHIFFRES) */
     function actionRegister() {
       const nom = document.getElementById('reg-nom').value.trim();
       const prenom = document.getElementById('reg-prenom').value.trim();
-      const pass = document.getElementById('reg-pass').value;
+      const pass = document.getElementById('reg-pass').value.trim();
       const errBox = document.getElementById('reg-error-msg');
 
       errBox.style.display = 'none';
 
       if(!nom || !prenom || !pass) {
         errBox.innerText = "Veuillez remplir tous les champs obligatoires (Nom, Prénom, Mot de passe).";
+        errBox.style.display = 'block';
+        return;
+      }
+
+      // RÈGLE OBLIGATOIRE : MOT DE PASSE COMPOSÉ DE EXACTEMENT 5 CHIFFRES NUMÉRIQUES
+      const passRegex = /^\d{5}$/;
+      if (!passRegex.test(pass)) {
+        errBox.innerText = "⚠️ Le mot de passe doit être composé de exactement 5 chiffres (ex: 12345).";
         errBox.style.display = 'block';
         return;
       }
@@ -1576,6 +1656,9 @@
       registeredUsers.push(newUser);
       currentUser = newUser;
       trimestresData = currentUser.trimestresData;
+
+      saveLocal();
+      syncUserToFirebase(currentUser);
 
       updateProfileDisplay();
       updateAppPhotos();
@@ -1690,6 +1773,8 @@
 
       if(currentUser) {
         currentUser.trimestresData = trimestresData;
+        saveLocal();
+        syncUserToFirebase(currentUser);
       }
 
       actualiserMoyennesGlobales();
@@ -2069,6 +2154,12 @@
         if(mo < 10) app = "🔴 Résultat insuffisant";
         else if(mo < 12) app = "🟠 À surveiller";
         document.getElementById('orient-appreciation-lbl').innerText = app;
+
+        if (currentUser) {
+          currentUser.moyenneOrientation = mo;
+          saveLocal();
+          syncUserToFirebase(currentUser);
+        }
       } else {
         document.getElementById('orient-score-val').innerText = "-- / 20";
         document.getElementById('orient-appreciation-lbl').innerText = "Renseignez toutes les notes BEPC nécessaires";
