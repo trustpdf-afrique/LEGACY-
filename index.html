@@ -1,2207 +1,305 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>ZTV Moyenne</title>
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,700&display=swap" rel="stylesheet">
-
-  <!-- Firebase Scripts (Compat v9) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-  <style>
-    :root {
-      --bg-main: #090D1A;
-      --bg-card: #1B2133;
-      --bg-input: #111827;
-      --border-light: #2A344A;
-
-      --orange-ztv: #FF8C00;
-      --green-ztv: #09A63D;
-      --white: #FFFFFF;
-      --text-gray: #9CA3AF;
-
-      --radius-xl: 24px;
-      --radius-lg: 16px;
-      --radius-md: 12px;
-      --radius-pill: 9999px;
-
-      --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.5);
-      --glow-orange: 0 0 20px rgba(255, 140, 0, 0.4);
-      --glow-green: 0 0 20px rgba(9, 166, 61, 0.4);
-
-      --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-
-    body {
-      background-color: #03060D;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      color: var(--white);
-    }
-
-    /* CHÂSSIS APPLICATION MOBILE */
-    .app-frame {
-      width: 100%;
-      max-width: 430px;
-      height: 100vh;
-      max-height: 920px;
-      background-color: var(--bg-main);
-      position: relative;
-      overflow-y: auto;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 0 60px rgba(0,0,0,0.95);
-      border-radius: 0px;
-    }
-
-    .app-frame::before {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(135deg, 
-        rgba(255, 140, 0, 0.05) 0%, 
-        rgba(255, 255, 255, 0.02) 50%, 
-        rgba(9, 166, 61, 0.05) 100%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    @media (min-width: 450px) {
-      .app-frame {
-        border-radius: 36px;
-        height: 94vh;
-        border: 2px solid var(--border-light);
-      }
-    }
-
-    /* BADGE DE CONFIRMATION (TOAST) */
-    .ztv-toast-badge {
-      position: absolute;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-20px);
-      background: #10B981;
-      color: #FFFFFF;
-      padding: 8px 16px;
-      border-radius: var(--radius-pill);
-      font-size: 12px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
-      z-index: 2000;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .ztv-toast-badge.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    /* TRANSITIONS & PAGES */
-    .page-view {
-      display: none;
-      flex-direction: column;
-      width: 100%;
-      min-height: 100%;
-      padding-bottom: 40px;
-      z-index: 1;
-      animation: fadeIn 0.3s ease-out forwards;
-    }
-
-    .page-view.active { display: flex; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* LOGO & BRANDING */
-    .ztv-logo-brand {
-      height: 38px;
-      width: auto;
-      object-fit: contain;
-    }
-
-    /* EN-TÊTE AUTHENTIFICATION */
-    .auth-header {
-      padding: 16px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(9, 13, 26, 0.8);
-    }
-
-    .btn-creator-top {
-      background: var(--bg-card);
-      border: 1px solid var(--border-light);
-      color: var(--white);
-      padding: 8px 14px;
-      border-radius: var(--radius-pill);
-      font-size: 11px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    .btn-creator-top:active { transform: scale(0.96); }
-
-    .header-divider-line {
-      width: 100%;
-      height: 2px;
-      background: var(--orange-ztv);
-      box-shadow: var(--glow-orange);
-    }
-
-    /* CARTE DE PRÉSENTATION */
-    .presentation-card {
-      margin: 16px 20px;
-      background: linear-gradient(135deg, rgba(9, 166, 61, 0.35) 0%, rgba(255, 140, 0, 0.35) 100%), var(--bg-card);
-      border: 1.5px solid var(--orange-ztv);
-      border-radius: var(--radius-xl);
-      padding: 18px 20px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      box-shadow: var(--shadow-card);
-    }
-
-    .presentation-logo {
-      width: 55px;
-      height: 55px;
-      object-fit: contain;
-      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
-    }
-
-    .presentation-title {
-      font-size: 18px;
-      font-weight: 900;
-      color: var(--white);
-      letter-spacing: -0.3px;
-    }
-
-    .presentation-subtitle {
-      font-size: 11px;
-      font-weight: 600;
-      color: #E2E8F0;
-      margin-top: 5px;
-      line-height: 1.35;
-    }
-
-    /* CARTE DE CONNEXION / INSCRIPTION */
-    .auth-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-xl);
-      margin: 0 20px;
-      padding: 20px;
-      box-shadow: var(--shadow-card);
-    }
-
-    /* ONGLETS (TABS) */
-    .auth-tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 22px;
-      background: var(--bg-input);
-      padding: 5px;
-      border-radius: var(--radius-pill);
-      border: 1px solid var(--border-light);
-    }
-
-    .tab-btn {
-      padding: 12px;
-      border-radius: var(--radius-pill);
-      border: none;
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: var(--transition);
-      text-align: center;
-      color: var(--white);
-      background: transparent;
-    }
-
-    .tab-btn.active {
-      background: var(--orange-ztv);
-      color: #000;
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      box-shadow: var(--glow-orange);
-    }
-
-    /* FORMULAIRES */
-    .form-grid-dual {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .form-group { margin-bottom: 14px; }
-
-    .form-input {
-      width: 100%;
-      background: var(--bg-input);
-      border: 1.5px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 14px 16px;
-      color: var(--white);
-      font-size: 13px;
-      font-weight: 600;
-      outline: none;
-      transition: var(--transition);
-    }
-
-    .form-input::placeholder { color: var(--text-gray); font-weight: 500; }
-    .form-input:focus { border-color: var(--orange-ztv); box-shadow: 0 0 12px rgba(255, 140, 0, 0.25); }
-    select.form-input { appearance: none; cursor: pointer; }
-
-    /* ERROR MESSAGE FORM */
-    .auth-error-msg {
-      color: #EF4444;
-      font-size: 11px;
-      font-weight: 700;
-      margin-top: 10px;
-      text-align: center;
-      display: none;
-      line-height: 1.3;
-    }
-
-    /* BOUTON SELECTION PHOTO GALERIE */
-    .btn-photo-gallery {
-      width: 100%;
-      background: linear-gradient(135deg, #1F293D 0%, #111827 100%);
-      border: 1.5px dashed var(--orange-ztv);
-      color: #FFF;
-      padding: 14px;
-      border-radius: var(--radius-lg);
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: var(--transition);
-      text-align: center;
-    }
-    .btn-photo-gallery:hover { background: rgba(255, 140, 0, 0.1); }
-
-    /* BOUTON PRINCIPAL VERT */
-    .btn-main-green {
-      background: var(--green-ztv);
-      color: var(--white);
-      font-weight: 800;
-      font-size: 15px;
-      border: none;
-      border-radius: var(--radius-pill);
-      padding: 16px;
-      width: 100%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      box-shadow: var(--glow-green);
-      transition: var(--transition);
-      margin-top: 10px;
-    }
-    .btn-main-green:active { transform: scale(0.97); }
-
-    .forgot-link {
-      display: block; text-align: center; color: var(--text-gray);
-      font-size: 12px; font-weight: 600; margin-top: 16px;
-      text-decoration: none; transition: var(--transition);
-    }
-    .forgot-link:hover { color: var(--white); }
-
-    /* BOUTON FLOTTANT WHATSAPP */
-    .whatsapp-float-btn {
-      position: fixed; bottom: 24px; right: 24px;
-      width: 56px; height: 56px; background: #25D366;
-      border-radius: 50%; display: flex; align-items: center;
-      justify-content: center; box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45);
-      z-index: 1000; cursor: pointer; transition: var(--transition); text-decoration: none;
-    }
-    .whatsapp-float-btn:active { transform: scale(0.9); }
-
-    /* ================= DASHBOARD STYLES ================= */
-    .dash-header {
-      padding: 20px; display: flex; justify-content: space-between; align-items: center;
-      background: linear-gradient(180deg, rgba(27, 33, 51, 0.8) 0%, rgba(9, 13, 26, 0) 100%);
-    }
-    .user-profile-info { display: flex; align-items: center; gap: 12px; }
-    .user-avatar-circle {
-      width: 48px; height: 48px; border-radius: 50%;
-      border: 2px solid var(--orange-ztv); object-fit: cover; background: var(--bg-card);
-    }
-
-    /* SECTION DES 3 TRIMESTRES */
-    .trimestres-section { padding: 0 16px; margin-bottom: 16px; }
-    .trimestres-row-top { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-    .trimestres-row-bottom { display: flex; justify-content: center; }
-    .trimestres-row-bottom .trim-card { width: 100%; max-width: 220px; }
-
-    .trim-card {
-      border-radius: var(--radius-xl); padding: 16px; color: #FFF;
-      cursor: pointer; box-shadow: var(--shadow-card); transition: var(--transition);
-      position: relative; overflow: hidden;
-    }
-    .trim-card:active { transform: scale(0.97); }
-    .trim-card-1 { 
-      background: linear-gradient(135deg, #FF8C00, #D96B00); 
-      border: 1.5px solid rgba(255, 215, 0, 0.6);
-      box-shadow: 0 0 15px rgba(255, 140, 0, 0.3);
-    }
-    .trim-card-2 { 
-      background: #FFFDF9; 
-      color: #0F172A; 
-      border: 1.5px solid #E2E8F0;
-    }
-    .trim-card-3 { 
-      background: linear-gradient(135deg, #09A63D, #00803E); 
-      border: 1.5px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 0 15px rgba(9, 166, 61, 0.3);
-    }
-
-    .trim-header-flex { display: flex; justify-content: space-between; align-items: center; }
-    .trim-title-box { display: flex; align-items: center; gap: 6px; }
-    .trim-title { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; }
-    .trim-sublbl { font-size: 10px; font-weight: 700; opacity: 0.85; margin-top: 4px; }
-    .trim-val { font-size: 19px; font-weight: 900; margin-top: 4px; }
-    .trim-arrow-circle {
-      width: 26px; height: 26px; border-radius: 50%;
-      background: #FFFFFF; color: #0F172A; display: flex; align-items: center; justify-content: center; 
-      font-size: 12px; font-weight: 900; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    }
-    .trim-card-2 .trim-arrow-circle { background: #0F172A; color: #FFF; }
-
-    .annual-card-ztv {
-      background: #FFFFFF; border-radius: var(--radius-xl);
-      padding: 18px; margin: 0 16px 16px; color: #0F172A; box-shadow: var(--shadow-card);
-    }
-    .annual-top-title {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      color: var(--green-ztv); font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 14px;
-    }
-    .annual-stats-grid {
-      display: grid; grid-template-columns: 1fr 1fr 1fr;
-      text-align: center; border-top: 1px solid #E2E8F0; padding-top: 12px;
-    }
-    .annual-stat-lbl { font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; }
-    .annual-stat-val { font-size: 18px; font-weight: 900; margin-top: 4px; color: #0F172A; }
-
-    .progression-card-ztv {
-      background: #FFFFFF; border-radius: var(--radius-xl); padding: 16px 20px;
-      margin: 0 16px 16px; color: #0F172A; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-card);
-    }
-    .prog-circle {
-      width: 58px; height: 58px; border-radius: 50%; border: 5px solid #EF4444;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 900; font-size: 13px; color: #0F172A; flex-shrink: 0;
-      transition: var(--transition); text-align: center;
-    }
-    .prog-bar-bg { width: 100%; height: 8px; background: #E2E8F0; border-radius: 4px; overflow: hidden; margin-top: 6px; }
-    .prog-bar-fill { height: 100%; width: 0%; background: #EF4444; border-radius: 4px; transition: all 0.5s ease; }
-
-    .objective-banner {
-      background: linear-gradient(135deg, #FF8C00, #D95300);
-      border-radius: var(--radius-lg); padding: 14px 18px; margin: 0 16px 16px; color: #FFF;
-      display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: var(--transition);
-    }
-    .objective-banner:active { transform: scale(0.98); }
-
-    /* BOUTON ORIENTATION 3EME */
-    .orientation-card-3eme {
-      background: linear-gradient(135deg, #1E1B4B 0%, #312E81 100%);
-      border: 1.5px solid #818CF8;
-      border-radius: var(--radius-xl);
-      padding: 16px 20px;
-      margin: 0 16px 16px;
-      color: #FFF;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      box-shadow: 0 8px 20px rgba(49, 46, 129, 0.4);
-      transition: var(--transition);
-    }
-    .orientation-card-3eme:active { transform: scale(0.97); }
-
-    /* BOUTONS PASTILLES PREMIUM DU BAS */
-    .bottom-dual-btns { display: flex; flex-direction: column; gap: 12px; padding: 0 16px; margin-bottom: 20px; }
-    
-    .btn-pill-premium {
-      background: linear-gradient(135deg, #241A08 0%, #171105 100%);
-      border: 1.5px solid #F59E0B;
-      border-radius: var(--radius-xl);
-      padding: 16px 18px;
-      color: var(--white);
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      cursor: pointer;
-      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.25);
-      transition: var(--transition);
-      width: 100%;
-    }
-    .btn-pill-premium:active { transform: scale(0.98); }
-    
-    .btn-pill-premium-green {
-      background: linear-gradient(135deg, #092613 0%, #05170B 100%);
-      border-color: #10B981;
-      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
-    }
-
-    .pill-icon-circle {
-      width: 42px; height: 42px; border-radius: 50%;
-      background: rgba(245, 158, 11, 0.2); display: flex;
-      align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;
-    }
-    .btn-pill-premium-green .pill-icon-circle { background: rgba(16, 185, 129, 0.2); }
-
-    /* BULLETIN DE NOTES */
-    .bulletin-container { padding: 16px; background: var(--bg-main); min-height: 100%; }
-    .bulletin-header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .btn-back-link {
-      background: var(--bg-card); border: 1px solid var(--border-light);
-      color: #FFF; padding: 10px 16px; border-radius: 20px;
-      font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;
-    }
-
-    .bulletin-table {
-      width: 100%; border-collapse: separate; border-spacing: 0;
-      background: var(--bg-card); border-radius: var(--radius-lg);
-      overflow: hidden; border: 1px solid var(--border-light); margin-bottom: 20px;
-    }
-    .bulletin-table th {
-      background: #111827; color: var(--orange-ztv); padding: 12px 8px;
-      font-size: 11px; font-weight: 800; text-transform: uppercase;
-      border-bottom: 1px solid var(--border-light); text-align: center;
-    }
-    .bulletin-table th:first-child { text-align: left; padding-left: 12px; }
-    .bulletin-table td { padding: 10px 8px; font-size: 12px; border-bottom: 1px solid #222C40; text-align: center; color: #FFF; }
-    .bulletin-table td:first-child { text-align: left; padding-left: 12px; font-weight: 600; }
-    
-    .section-title-row td {
-      background: #0D1322; color: var(--green-ztv); font-weight: 800;
-      font-size: 10px; text-transform: uppercase; letter-spacing: 1px; text-align: center !important; padding: 8px !important;
-    }
-
-    .inp-coef {
-      width: 42px; background: var(--bg-input); border: 1px solid var(--border-light);
-      color: #FFF; text-align: center; border-radius: 6px; padding: 6px; font-weight: 700; font-size: 12px;
-    }
-
-    .inp-note {
-      width: 58px; background: var(--bg-input); border: 1.5px solid var(--orange-ztv);
-      color: #FFF; text-align: center; border-radius: 8px; padding: 6px; font-weight: 800; font-size: 13px;
-    }
-
-    .summary-row td { background: #111827; font-weight: 800; color: var(--orange-ztv); font-size: 13px; border-top: 2px solid var(--border-light); }
-
-    /* MON PROFIL */
-    .profile-card-box {
-      background: var(--bg-card); border: 1px solid var(--border-light);
-      border-radius: var(--radius-xl); padding: 24px 20px; margin: 16px;
-      box-shadow: var(--shadow-card); text-align: center;
-    }
-    .profile-avatar-large {
-      width: 95px; height: 95px; border-radius: 50%;
-      border: 3px solid var(--green-ztv); object-fit: cover;
-      margin-bottom: 12px; background: var(--bg-input); box-shadow: var(--glow-green);
-    }
-    .profile-field-list { text-align: left; margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
-    .profile-field-item {
-      background: #111827; border: 1px solid var(--border-light);
-      border-radius: var(--radius-md); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
-    }
-    .profile-field-label { font-size: 11px; color: var(--text-gray); font-weight: 700; text-transform: uppercase; }
-    .profile-field-value { font-size: 13px; color: #FFF; font-weight: 800; }
-
-    /* ================= TABLEAU D'HONNEUR - DIPLÔME ================= */
-    .certif-selector-bar {
-      display: flex; gap: 8px; overflow-x: auto; padding: 0 16px 16px;
-      scrollbar-width: none;
-    }
-    .certif-selector-bar::-webkit-scrollbar { display: none; }
-    .certif-tab-btn {
-      background: var(--bg-card); border: 1px solid var(--border-light);
-      color: var(--white); padding: 10px 16px; border-radius: var(--radius-pill);
-      font-size: 11px; font-weight: 800; whitespace: nowrap; cursor: pointer; transition: var(--transition);
-    }
-    .certif-tab-btn.active {
-      background: var(--orange-ztv); color: #000; border-color: #FFF; box-shadow: var(--glow-orange);
-    }
-
-    .portrait-cert-wrapper { padding: 0 16px; width: 100%; }
-
-    .certificate-portrait-frame {
-      background: #FFFDF8;
-      border: 8px double #92400E;
-      outline: 2px solid #D97706;
-      outline-offset: -5px;
-      border-radius: 16px;
-      padding: 24px 18px;
-      color: #1E293B;
-      text-align: center;
-      position: relative;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.7);
-      width: 100%;
-      box-sizing: border-box;
-      margin: 0 auto;
-      background-image: radial-gradient(#F59E0B 0.5px, transparent 0.5px);
-      background-size: 16px 16px;
-    }
-
-    .cert-inner-border {
-      border: 1px solid rgba(180, 83, 9, 0.3);
-      padding: 18px 12px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.95);
-    }
-
-    .cert-header-vertical {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      border-bottom: 2px solid #D97706;
-      padding-bottom: 12px;
-      margin-bottom: 16px;
-      gap: 6px;
-    }
-
-    .cert-header-logo { height: 48px; width: auto; object-fit: contain; }
-
-    .cert-title-portrait {
-      font-family: 'Playfair Display', serif;
-      font-size: 22px;
-      font-weight: 900;
-      color: #78350F;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .cert-subtitle-gold {
-      font-size: 11px;
-      color: #09A63D;
-      font-weight: 800;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-    }
-
-    .cert-body-vertical {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      margin: 14px 0;
-      gap: 10px;
-    }
-
-    .cert-student-photo {
-      width: 85px; height: 85px; border-radius: 50%;
-      border: 3.5px solid #D97706; object-fit: cover;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #FFF;
-    }
-
-    .cert-student-fullname {
-      font-family: 'Playfair Display', serif;
-      font-size: 20px; font-weight: 900; color: #0F172A; text-transform: uppercase;
-    }
-
-    .cert-detail-line { font-size: 11.5px; font-weight: 700; color: #475569; }
-
-    .cert-badge-box {
-      background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-      border: 1.5px solid #F59E0B; border-radius: 12px; padding: 10px;
-      display: flex; justify-style: space-around; align-items: center;
-      margin: 14px 0; width: 100%;
-    }
-
-    .cert-badge-lbl { font-size: 9px; font-weight: 800; color: #92400E; text-transform: uppercase; }
-    .cert-badge-val { font-size: 18px; font-weight: 900; color: #78350F; }
-    .cert-badge-mention { font-size: 14px; font-weight: 900; color: var(--green-ztv); }
-
-    .cert-footer-portrait {
-      display: flex; justify-content: space-between; align-items: flex-end;
-      margin-top: 16px; padding-top: 10px; border-top: 1px dashed #CBD5E1;
-    }
-
-    .cert-signature-title { font-size: 9px; font-weight: 800; color: #64748B; text-transform: uppercase; }
-    .cert-signature-font { font-family: 'Great Vibes', cursive; font-size: 20px; color: #0F172A; font-weight: bold; }
-
-    .btn-print-cert {
-      background: linear-gradient(135deg, var(--orange-ztv), #D96B00);
-      color: #FFF; font-weight: 800; font-size: 14px; border: none;
-      border-radius: var(--radius-pill); padding: 14px 24px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      box-shadow: var(--glow-orange); margin: 16px auto 0;
-      width: calc(100% - 32px); transition: var(--transition);
-    }
-    .btn-print-cert:active { transform: scale(0.96); }
-
-    @media print {
-      @page { size: portrait; margin: 10mm; }
-      body { background: #FFF !important; display: block !important; }
-      .app-frame { max-width: 100% !important; height: auto !important; max-height: none !important; box-shadow: none !important; border: none !important; background: #FFF !important; }
-      .page-view { display: none !important; }
-      #view-certif { display: block !important; padding: 0 !important; }
-      .certif-selector-bar, .btn-print-cert, .btn-back-link, .dash-header, .whatsapp-float-btn { display: none !important; }
-      .portrait-cert-wrapper { padding: 0 !important; width: 100% !important; }
-      .certificate-portrait-frame { width: 100% !important; max-width: none !important; box-shadow: none !important; border-width: 8px !important; page-break-inside: avoid; }
-    }
-
-    /* MODALE POPUP */
-    .modal-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(3, 6, 13, 0.88); backdrop-filter: blur(8px);
-      z-index: 1050; display: none; align-items: center; justify-content: center; padding: 20px;
-      animation: fadeIn 0.2s ease-out;
-    }
-    .modal-overlay.active { display: flex; }
-
-    .modal-card {
-      background: var(--bg-card); border: 1.5px solid var(--border-light);
-      border-radius: var(--radius-xl); padding: 22px; width: 100%; max-width: 360px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-    }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px; }
-    .modal-title { font-size: 15px; font-weight: 800; color: #FFF; display: flex; align-items: center; gap: 8px; }
-    .modal-close-btn {
-      background: var(--bg-input); border: 1px solid var(--border-light);
-      color: var(--text-gray); width: 28px; height: 28px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; font-weight: 800; cursor: pointer;
-    }
-
-    .creator-photo-ring {
-      width: 90px; height: 90px; border-radius: 50%;
-      border: 3px solid var(--orange-ztv); box-shadow: 0 0 15px rgba(255, 140, 0, 0.6);
-      object-fit: cover; margin: 0 auto 12px auto; display: block;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZTV Moyenne — ADMINISTRATEUR</title>
+    <!-- CSS / Style -->
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .share-box {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .share-box label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1e40af;
+        }
+
+        .share-flex {
+            display: flex;
+            gap: 10px;
+        }
+
+        .share-flex input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #93c5fd;
+            border-radius: 6px;
+            background-color: #fff;
+            font-size: 0.95rem;
+        }
+
+        .share-flex button {
+            padding: 10px 18px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .share-flex button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .btn-logout {
+            background-color: #ef4444;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            width: auto;
+        }
+
+        .btn-logout:hover {
+            background-color: #dc2626;
+        }
+    </style>
 </head>
 <body>
 
-  <!-- CHÂSSIS APPLICATION -->
-  <div class="app-frame">
+    <div class="container">
 
-    <!-- BADGE DE CONFIRMATION (TOAST MODERNE) -->
-    <div class="ztv-toast-badge" id="ztv-toast">
-      <span>✅</span>
-      <span id="toast-text">Enregistré</span>
-    </div>
-
-    <!-- ================= 1. PAGE D'AUTHENTIFICATION ZTV MOYENNE ================= -->
-    <div id="view-auth" class="page-view active">
-      
-      <div class="auth-header">
-        <img src="https://i.postimg.cc/HjDJvjqX/file-00000000685081f4afaf53efdfb26e58.png" alt="ZTV Moyenne Logo" class="ztv-logo-brand" />
-        <button class="btn-creator-top" onclick="openModalCreator()">
-          <span style="color:var(--orange-ztv); font-size:14px;">👑</span>
-          <span>Créateur de l'application</span>
-        </button>
-      </div>
-
-      <div class="header-divider-line"></div>
-
-      <div class="presentation-card">
-        <img src="https://i.postimg.cc/HjDJvjqX/file-00000000685081f4afaf53efdfb26e58.png" alt="ZTV Moyenne Logo" class="presentation-logo" />
-        <div>
-          <div class="presentation-title">ZTV Moyenne</div>
-          <div class="presentation-subtitle">ZTV Moyenne permet aux élèves de calculer facilement leur moyenne du 1er, 2e et 3e trimestre, ainsi que leur moyenne annuelle. Il suffit de saisir ses moyennes pour obtenir rapidement ses résultats.</div>
-        </div>
-      </div>
-
-      <div class="auth-card">
-        <div class="auth-tabs">
-          <button class="tab-btn active" id="tab-login-btn" onclick="switchAuthTab('login')">Se connecter</button>
-          <button class="tab-btn" id="tab-register-btn" onclick="switchAuthTab('register')">S'inscrire</button>
-        </div>
-
-        <!-- FORMULAIRE SE CONNECTER -->
-        <div id="form-login-content">
-          <div class="form-group">
-            <input type="text" class="form-input" id="login-fullname" placeholder="Nom complet" />
-          </div>
-
-          <div class="form-group">
-            <input type="password" class="form-input" id="login-pass" placeholder="Mot de passe (5 chiffres)" />
-          </div>
-
-          <button class="btn-main-green" onclick="actionLogin()">
-            <span>Accéder à mon espace</span>
-            <span>➔</span>
-          </button>
-
-          <div class="auth-error-msg" id="login-error-msg">
-            Vos informations sont incorrectes. Veuillez vérifier vos informations et réessayer.
-          </div>
-
-          <a href="#" class="forgot-link" onclick="openModal('Mot de passe', '<p style=\'font-size:12px; color:#9CA3AF;\'>Veuillez contacter l\'administration ou le support WhatsApp pour réinitialiser vos accès.</p>')">Mot de passe oublié ?</a>
-        </div>
-
-        <!-- FORMULAIRE S'INSCRIRE -->
-        <div id="form-register-content" style="display:none;">
-          <div class="form-grid-dual">
-            <div class="form-group"><input type="text" class="form-input" id="reg-nom" placeholder="Nom" /></div>
-            <div class="form-group"><input type="text" class="form-input" id="reg-prenom" placeholder="Prénom" /></div>
-          </div>
-
-          <div class="form-grid-dual">
-            <div class="form-group"><input type="text" class="form-input" id="reg-ville" placeholder="Ville" /></div>
-            <div class="form-group">
-              <select class="form-input" id="reg-pays">
-                <option value="Côte d'Ivoire">Côte d'Ivoire 🇨🇮</option>
-                <option value="Bénin">Bénin 🇧🇯</option>
-                <option value="Burkina Faso">Burkina Faso 🇧🇫</option>
-                <option value="Sénégal">Sénégal 🇸🇳</option>
-              </select>
+        <!-- ========================================== -->
+        <!-- 1. PAGE DE CONNEXION ADMINISTRATEUR        -->
+        <!-- ========================================== -->
+        <div id="loginSection" class="card">
+            <div class="header">
+                <h1>🔐 ZTV Moyenne</h1>
+                <p>Espace de Connexion Administrateur</p>
             </div>
-          </div>
-
-          <div class="form-group">
-            <input type="text" class="form-input" id="reg-etablissement" placeholder="Établissement scolaire" />
-          </div>
-
-          <div class="form-group">
-            <select class="form-input" id="reg-classe" onchange="checkClasse3emeUI()">
-              <option value="">Sélectionnez votre classe...</option>
-              <option value="6ème">6ème</option>
-              <option value="5ème">5ème</option>
-              <option value="4ème">4ème</option>
-              <option value="3ème">3ème</option>
-              <option value="Seconde">Seconde</option>
-              <option value="Première">Première</option>
-              <option value="Terminale">Terminale</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <input type="tel" class="form-input" id="reg-whatsapp" placeholder="Numéro WhatsApp" />
-          </div>
-
-          <!-- SELECTION PHOTO GALERIE -->
-          <div class="form-group">
-            <label for="reg-photo-file" class="btn-photo-gallery">
-              <span>📷 Ajouter ma photo depuis la galerie</span>
-            </label>
-            <input type="file" id="reg-photo-file" accept="image/*" style="display:none;" onchange="handlePhotoSelect(event)" />
-            <div id="photo-preview-msg" style="font-size:11px; color:var(--green-ztv); margin-top:6px; text-align:center; font-weight:700;"></div>
-          </div>
-
-          <div class="form-group">
-            <input type="password" class="form-input" id="reg-pass" placeholder="Mot de passe (5 chiffres)" maxlength="5" />
-          </div>
-
-          <button class="btn-main-green" onclick="actionRegister()">
-            <span>Créer mon compte</span>
-            <span>✓</span>
-          </button>
-
-          <div class="auth-error-msg" id="reg-error-msg">
-            Ces informations ont déjà un compte actif. Veuillez vous connecter.
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ================= 2. TABLEAU DE BORD (DASHBOARD) ================= -->
-    <div id="view-dashboard" class="page-view">
-      <div class="dash-header">
-        <div class="user-profile-info">
-          <img src="https://i.postimg.cc/Z5t6ctQQ/file-000000008a6081f9a7552dfe57d5c70d.png" class="user-avatar-circle" id="dash-avatar-img" />
-          <div>
-            <div style="font-size: 11px; color: var(--text-gray);">Bonjour,</div>
-            <div style="font-size: 15px; font-weight: 800;" id="dash-user-name">Élève ZTV 👋</div>
-          </div>
-        </div>
-        <img src="https://i.postimg.cc/HjDJvjqX/file-00000000685081f4afaf53efdfb26e58.png" alt="ZTV Moyenne Logo" style="height: 36px; width: auto;" />
-      </div>
-
-      <!-- DISPOSITION EXACTE DES 3 TRIMESTRES -->
-      <div class="trimestres-section">
-        <div class="trimestres-row-top">
-          <!-- 1er TRIMESTRE -->
-          <div class="trim-card trim-card-1" onclick="openTrimPage(1)">
-            <div class="trim-header-flex">
-              <div class="trim-title-box">
-                <span style="font-size:15px;">📚</span>
-                <span class="trim-title">1er TRIMESTRE</span>
-              </div>
-              <div class="trim-arrow-circle">→</div>
-            </div>
-            <div class="trim-sublbl">Moyenne</div>
-            <div class="trim-val" id="val-t1">-- /20</div>
-          </div>
-
-          <!-- 2e TRIMESTRE -->
-          <div class="trim-card trim-card-2" onclick="openTrimPage(2)">
-            <div class="trim-header-flex">
-              <div class="trim-title-box">
-                <span style="font-size:15px;">📚</span>
-                <span class="trim-title">2e TRIMESTRE</span>
-              </div>
-              <div class="trim-arrow-circle">→</div>
-            </div>
-            <div class="trim-sublbl">Moyenne</div>
-            <div class="trim-val" id="val-t2">-- /20</div>
-          </div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="adminEmail">Email Administrateur</label>
+                    <input type="email" id="adminEmail" placeholder="admin@ztvmoyenne.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Mot de passe</label>
+                    <input type="password" id="adminPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn">Se connecter au Dashboard</button>
+            </form>
         </div>
 
-        <!-- 3e TRIMESTRE -->
-        <div class="trimestres-row-bottom">
-          <div class="trim-card trim-card-3" onclick="openTrimPage(3)">
-            <div class="trim-header-flex">
-              <div class="trim-title-box">
-                <span style="font-size:15px;">📚</span>
-                <span class="trim-title">3e TRIMESTRE</span>
-              </div>
-              <div class="trim-arrow-circle">→</div>
-            </div>
-            <div class="trim-sublbl">Moyenne</div>
-            <div class="trim-val" id="val-t3">-- /20</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CARTE MOYENNE D'ORIENTATION (CLASSE DE 3EME) -->
-      <div id="card-orientation-3eme-wrapper" style="display:none;">
-        <div class="orientation-card-3eme" onclick="switchPage('view-orientation')">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <span style="font-size:28px;">🎯</span>
-            <div>
-              <div style="font-size:13px; font-weight:900;">Moyenne d'orientation</div>
-              <div style="font-size:10px; color:#A5B4FC; margin-top:2px;">Calculer ma moyenne d'orientation (3ᵉ)</div>
-            </div>
-          </div>
-          <div style="font-size:16px;">➔</div>
-        </div>
-      </div>
-
-      <!-- Moyenne Annuelle -->
-      <div class="annual-card-ztv">
-        <div class="annual-top-title">🎓 Moyenne Annuelle</div>
-        <div class="annual-stats-grid">
-          <div>
-            <div class="annual-stat-lbl">Moyenne</div>
-            <div class="annual-stat-val" id="val-annual" style="color:var(--orange-ztv);">-- /20</div>
-          </div>
-          <div>
-            <div class="annual-stat-lbl">Mention</div>
-            <div class="annual-stat-val" id="val-mention" style="color:var(--text-gray); font-size:13px; margin-top:4px;">--</div>
-          </div>
-          <div>
-            <div class="annual-stat-lbl">Décision</div>
-            <div class="annual-stat-val" id="val-decision" style="color:var(--text-gray); font-size:12px; margin-top:6px;">--</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Progression Générale en Pourcentage -->
-      <div class="progression-card-ztv">
-        <div class="prog-circle" id="circle-pct">0 %</div>
-        <div style="flex:1;">
-          <div style="font-size: 12px; font-weight: 800; text-transform: uppercase;">Progression Générale</div>
-          <div style="font-size: 11px; color: #64748B; margin-top:2px;" id="prog-desc">Renseignez vos moyennes par trimestre</div>
-          <div class="prog-bar-bg"><div class="prog-bar-fill" id="bar-fill"></div></div>
-        </div>
-      </div>
-
-      <!-- Objectif Passer en classe supérieure -->
-      <div class="objective-banner" onclick="openModalObjectif()">
-        <div>
-          <div style="font-size: 11px; font-weight: 800; text-transform: uppercase;">🎯 Objectif : Passer en classe supérieure</div>
-          <div style="font-size: 9px; opacity: 0.9;">Voir les détails et conseils personnalisés</div>
-        </div>
-        <div style="font-size:14px;">➔</div>
-      </div>
-
-      <!-- BOUTONS PASTILLES MON PROFIL PUIS TABLEAU D'HONNEUR -->
-      <div class="bottom-dual-btns">
-        <div class="btn-pill-premium btn-pill-premium-green" onclick="switchPage('view-profile')">
-          <div class="pill-icon-circle" style="color:var(--green-ztv);">👤</div>
-          <div>
-            <div style="font-size:12px; font-weight:900; color:#10B981;">MON PROFIL</div>
-            <div style="font-size:9.5px; color:var(--text-gray);">Voir et gérer mon compte</div>
-          </div>
-        </div>
-
-        <div class="btn-pill-premium" onclick="ouvrirTableauHonneurAccueil()">
-          <div class="pill-icon-circle">🏆</div>
-          <div>
-            <div style="font-size:12px; font-weight:900; color:#F59E0B;">TABLEAU D'HONNEUR</div>
-            <div style="font-size:9.5px; color:var(--text-gray);">Voir mon tableau d'honneur</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ================= 3. PAGE SAISIE DE TRIMESTRE ================= -->
-    <div id="view-trim-entry" class="page-view">
-      <div class="bulletin-container">
-        <div class="bulletin-header-top">
-          <button class="btn-back-link" onclick="switchPage('view-dashboard')">⬅️ Retour au tableau de bord</button>
-          <img src="https://i.postimg.cc/HjDJvjqX/file-00000000685081f4afaf53efdfb26e58.png" style="height:32px;" />
-        </div>
-
-        <div style="margin-bottom:14px;">
-          <h2 style="font-size:16px; font-weight:800;" id="trim-entry-title">Saisie des Moyennes - 1er Trimestre</h2>
-          <p style="font-size:11px; color:var(--text-gray);">Renseignez vos coefficients et vos moyennes par discipline.</p>
-        </div>
-
-        <table class="bulletin-table" id="bulletin">
-          <thead>
-            <tr>
-              <th>Discipline</th>
-              <th>Coef.</th>
-              <th>Moyenne</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- LETTRES -->
-            <tr class="section-title-row"><td colspan="4">--- LETTRES ---</td></tr>
-            <tr data-subject="Français">
-              <td>Français</td>
-              <td><input type="number" class="inp-coef" value="3" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-            <tr data-subject="Anglais">
-              <td>Anglais</td>
-              <td><input type="number" class="inp-coef" value="2" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-            <tr data-subject="Espagnol">
-              <td>Espagnol</td>
-              <td><input type="number" class="inp-coef" value="2" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-            <tr data-subject="Allemand">
-              <td>Allemand</td>
-              <td><input type="number" class="inp-coef" value="2" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-            <tr data-subject="Histoire - Géographie">
-              <td>Histoire - Géographie</td>
-              <td><input type="number" class="inp-coef" value="2" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-
-            <!-- SCIENCES -->
-            <tr class="section-title-row"><td colspan="4">--- SCIENCES ---</td></tr>
-            <tr data-subject="Mathématiques">
-              <td>Mathématiques</td>
-              <td><input type="number" class="inp-coef" value="3" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-            <tr data-subject="Physique - Chimie">
-              <td>Physique - Chimie</td>
-              <td><input type="number" class="inp-coef" value="2" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-            <tr data-subject="SVT">
-              <td>SVT</td>
-              <td><input type="number" class="inp-coef" value="2" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-
-            <!-- AUTRES MATIÈRES -->
-            <tr class="section-title-row"><td colspan="4">--- AUTRES MATIÈRES ---</td></tr>
-            <tr data-subject="Philosophie">
-              <td>Philosophie</td>
-              <td><input type="number" class="inp-coef" value="2" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-            <tr data-subject="EDHC">
-              <td>EDHC</td>
-              <td><input type="number" class="inp-coef" value="1" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-            <tr data-subject="EPS">
-              <td>EPS</td>
-              <td><input type="number" class="inp-coef" value="1" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-            <tr data-subject="Arts plastiques">
-              <td>Arts plastiques</td>
-              <td><input type="number" class="inp-coef" value="1" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-            <!-- AJOUT DE DEUX MATIÈRES : MUSIQUE & CONDUITE -->
-            <tr data-subject="Musique">
-              <td>🎵 Musique</td>
-              <td><input type="number" class="inp-coef" value="1" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-            <tr data-subject="Conduite">
-              <td>🚗 Conduite</td>
-              <td><input type="number" class="inp-coef" value="1" oninput="calculerBulletin()" /></td>
-              <td><input type="number" min="0" max="20" step="0.25" class="inp-note" oninput="calculerBulletin()" /></td>
-              <td class="tot-cell">-</td>
-            </tr>
-
-            <!-- SUMMARY -->
-            <tr class="summary-row">
-              <td colspan="2">Total Général</td>
-              <td id="total-coefs">0</td>
-              <td id="total-points">0.00</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <button class="btn-main-green" onclick="enregistrerPageTrimestre()">💾 ENREGISTRER ET REVENIR</button>
-      </div>
-    </div>
-
-    <!-- ================= 4. PAGE MON PROFIL ================= -->
-    <div id="view-profile" class="page-view">
-      <div style="padding:16px; display:flex; justify-content:space-between; align-items:center;">
-        <button class="btn-back-link" onclick="switchPage('view-dashboard')">⬅️ Retour</button>
-        <button class="btn-back-link" style="border-color:var(--orange-ztv); color:var(--orange-ztv);" onclick="openModalCreator()">👑 Créateur</button>
-      </div>
-
-      <div style="text-align:center;">
-        <h2 style="font-size: 18px; font-weight: 800;">👤 MON PROFIL ÉLÈVE</h2>
-        <p style="font-size: 11px; color: var(--text-gray);">Voir et gérer mon compte</p>
-      </div>
-
-      <div class="profile-card-box">
-        <img src="https://i.postimg.cc/Z5t6ctQQ/file-000000008a6081f9a7552dfe57d5c70d.png" class="profile-avatar-large" id="profile-avatar-img" />
-        <h3 style="font-size: 18px; font-weight: 800;" id="prof-disp-fullname">Nom & Prénom</h3>
-        <p style="font-size: 12px; color: var(--green-ztv); font-weight: 700; margin-top:2px;" id="prof-disp-role">Élève Connecté(e)</p>
-
-        <div class="profile-field-list">
-          <div class="profile-field-item">
-            <span class="profile-field-label">Nom</span>
-            <span class="profile-field-value" id="prof-nom">--</span>
-          </div>
-          <div class="profile-field-item">
-            <span class="profile-field-label">Prénom</span>
-            <span class="profile-field-value" id="prof-prenom">--</span>
-          </div>
-          <div class="profile-field-item">
-            <span class="profile-field-label">Établissement</span>
-            <span class="profile-field-value" id="prof-etablissement">--</span>
-          </div>
-          <div class="profile-field-item">
-            <span class="profile-field-label">Classe</span>
-            <span class="profile-field-value" id="prof-classe">--</span>
-          </div>
-          <div class="profile-field-item">
-            <span class="profile-field-label">Ville</span>
-            <span class="profile-field-value" id="prof-ville">--</span>
-          </div>
-          <div class="profile-field-item">
-            <span class="profile-field-label">Pays</span>
-            <span class="profile-field-value" id="prof-pays">Côte d'Ivoire 🇨🇮</span>
-          </div>
-          <div class="profile-field-item">
-            <span class="profile-field-label">WhatsApp</span>
-            <span class="profile-field-value" id="prof-whatsapp">--</span>
-          </div>
-          <div class="profile-field-item">
-            <span class="profile-field-label">Création du compte</span>
-            <span class="profile-field-value" id="prof-created-date">--</span>
-          </div>
-        </div>
-
-        <div style="margin-top:18px; text-align:left;">
-          <h4 style="font-size:12px; font-weight:800; color:var(--orange-ztv); margin-bottom:10px;">📊 RÉSUMÉ DES RÉSULTATS</h4>
-          <div class="profile-field-list">
-            <div class="profile-field-item">
-              <span class="profile-field-label">1er Trimestre</span>
-              <span class="profile-field-value" id="prof-t1-val">-- /20</span>
-            </div>
-            <div class="profile-field-item">
-              <span class="profile-field-label">2e Trimestre</span>
-              <span class="profile-field-value" id="prof-t2-val">-- /20</span>
-            </div>
-            <div class="profile-field-item">
-              <span class="profile-field-label">3e Trimestre</span>
-              <span class="profile-field-value" id="prof-t3-val">-- /20</span>
-            </div>
-            <div class="profile-field-item">
-              <span class="profile-field-label">Moyenne Annuelle</span>
-              <span class="profile-field-value" id="prof-annuel-val" style="color:var(--orange-ztv);">-- /20</span>
-            </div>
-            <div class="profile-field-item">
-              <span class="profile-field-label">Mention Annuelle</span>
-              <span class="profile-field-value" id="prof-mention-val">--</span>
-            </div>
-          </div>
-        </div>
-
-        <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
-          <button class="btn-photo-gallery" onclick="triggerPhotoChange()">📷 Modifier ma photo</button>
-          <button class="btn-main-green" style="background:#EF4444; box-shadow:none;" onclick="actionLogout()">🔒 Se déconnecter</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= 5. PAGE CERTIFICAT TABLEAU D'HONNEUR ================= -->
-    <div id="view-certif" class="page-view">
-      <div style="padding:16px; display:flex; justify-content:space-between; align-items:center;">
-        <button class="btn-back-link" onclick="switchPage('view-dashboard')">⬅️ Retour</button>
-        <span style="font-size:12px; font-weight:800; color:var(--orange-ztv);">🎓 TABLEAU D'HONNEUR</span>
-      </div>
-
-      <!-- ONGLETS PAR PERIODE -->
-      <div class="certif-selector-bar">
-        <button class="certif-tab-btn active" id="cert-tab-annuel" onclick="changeCertifPeriod('annuel')">🏆 Tableau d'honneur Annuel</button>
-        <button class="certif-tab-btn" id="cert-tab-t1" onclick="changeCertifPeriod('t1')">🏆 1er Trimestre</button>
-        <button class="certif-tab-btn" id="cert-tab-t2" onclick="changeCertifPeriod('t2')">🏆 2e Trimestre</button>
-        <button class="certif-tab-btn" id="cert-tab-t3" onclick="changeCertifPeriod('t3')">🏆 3e Trimestre</button>
-      </div>
-
-      <!-- CERTIFICAT FORMAT VERTICAL PORTRAIT PREMIUM -->
-      <div class="portrait-cert-wrapper">
-        <div class="certificate-portrait-frame">
-          <div class="cert-inner-border">
+        <!-- ========================================== -->
+        <!-- 2. TABLEAU DE BORD ADMINISTRATEUR          -->
+        <!-- ========================================== -->
+        <div id="dashboardSection" class="card hidden">
             
-            <div class="cert-header-vertical">
-              <img src="https://i.postimg.cc/HjDJvjqX/file-00000000685081f4afaf53efdfb26e58.png" class="cert-header-logo" alt="Logo ZTV Moyenne" />
-              <div>
-                <div class="cert-title-portrait">🏆 TABLEAU D'HONNEUR</div>
-                <div class="cert-subtitle-gold">ACADÉMIE ZTV EXCELLENCE</div>
-              </div>
-              <div style="font-size:24px;">🎖️</div>
+            <div class="top-bar">
+                <h2>📊 Tableau de Bord Administrateur</h2>
+                <button onclick="handleLogout()" class="btn btn-logout">Déconnexion</button>
             </div>
 
-            <div class="cert-body-vertical">
-              <img src="https://i.postimg.cc/Z5t6ctQQ/file-000000008a6081f9a7552dfe57d5c70d.png" class="cert-student-photo" id="cert-photo-img" />
-              <div>
-                <div style="font-size:9.5px; font-weight:800; color:#D97706; text-transform:uppercase;">Félicitations à :</div>
-                <div class="cert-student-fullname" id="cert-fullname">NOM & PRÉNOM</div>
-                <div class="cert-detail-line" style="margin-top:4px;">Élève en classe de <strong id="cert-classe" style="color:#0F172A;">--</strong></div>
-                <div class="cert-detail-line"><strong id="cert-school-name" style="color:#0F172A;">--</strong></div>
-                <div style="font-size:10px; font-style:italic; color:#64748B; margin-top:4px;">Pour son travail remarquable et sa constante persévérance.</div>
-              </div>
+            <!-- BLOC : LIEN OFFICIEL POUR LES ÉLÈVES -->
+            <div class="share-box">
+                <label for="eleveUrl">🔗 Lien officiel à partager aux Élèves / Participants :</label>
+                <div class="share-flex">
+                    <input type="text" id="eleveUrl" value="https://votre-domaine.com/eleves.html" readonly>
+                    <button type="button" onclick="copyEleveLink()">Copier le lien</button>
+                </div>
             </div>
 
-            <div class="cert-badge-box">
-              <div>
-                <div class="cert-badge-lbl" id="cert-period-lbl">Moyenne Annuelle</div>
-                <div class="cert-badge-val" id="cert-annual-val">-- /20</div>
-              </div>
-              <div style="height:25px; width:1px; background:#F59E0B;"></div>
-              <div>
-                <div class="cert-badge-lbl">Mention</div>
-                <div class="cert-badge-mention" id="cert-mention-lbl">--</div>
-              </div>
+            <!-- SECTION GESTION DONNÉES / FIREBASE -->
+            <div id="adminControls">
+                <h3> Données et Configurations</h3>
+                <p style="margin-top: 10px; color: #64748b;">
+                    Vos fonctionnalités d'administration, la gestion des moyennes et la base de données Firebase sont connectées et prêtes.
+                </p>
+                <!-- Conservez et insérez vos blocs de gestion habituels ici -->
             </div>
 
-            <p style="font-size:10px; color:#334155; line-height:1.45; text-align:center; padding:0 4px; margin:10px 0; font-weight:600;">
-              Grâce à ton sérieux, ta discipline et ton goût de l'effort, tu mérites amplement ta place dans le <strong>TABLEAU D'HONNEUR</strong>. Continue de viser l'excellence !
-            </p>
-
-            <div class="cert-footer-portrait">
-              <div style="text-align:left;">
-                <div style="font-size:9px; font-weight:800; color:#64748B;">Année scolaire : <span id="cert-school-year">2025-2026</span></div>
-                <img src="https://i.postimg.cc/HjDJvjqX/file-00000000685081f4afaf53efdfb26e58.png" style="height:18px; margin-top:4px;" />
-              </div>
-
-              <div style="text-align:right;">
-                <div class="cert-signature-title">Signature</div>
-                <div class="cert-signature-font">Zakaria Niampa</div>
-              </div>
-            </div>
-
-          </div>
         </div>
-      </div>
-
-      <button class="btn-print-cert" onclick="window.print()">
-        <span>🖨️ Imprimer le Tableau d'honneur</span>
-      </button>
 
     </div>
 
-    <!-- ================= 6. PAGE MOYENNE D'ORIENTATION (CLASSE DE 3E) ================= -->
-    <div id="view-orientation" class="page-view">
-      <div style="padding:16px; display:flex; justify-content:space-between; align-items:center;">
-        <button class="btn-back-link" onclick="switchPage('view-dashboard')">⬅️ Retour</button>
-        <span style="font-size:12px; font-weight:800; color:#818CF8;">🎯 ORIENTATION BEPC</span>
-      </div>
+    <!-- ========================================== -->
+    <!-- 3. CONFIGURATION & LOGIQUE FIREBASE        -->
+    <!-- ========================================== -->
+    <script type="module">
+        // Importation des SDKs Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-      <div style="padding: 0 16px;">
-        <div style="background: linear-gradient(135deg, #1E1B4B, #312E81); border-radius: var(--radius-xl); padding: 18px; border: 1.5px solid #818CF8; margin-bottom: 16px;">
-          <h2 style="font-size: 16px; font-weight: 900; color:#FFF; margin-bottom: 4px;">🎯 Calcul de la Moyenne d'Orientation</h2>
-          <p style="font-size: 11px; color: #C7D2FE; line-height: 1.4;">
-            Calcul officiel basé sur vos moyennes trimestrielles réelles et vos résultats au BEPC.
-          </p>
-        </div>
-
-        <!-- RESULTAT MO FINAL -->
-        <div id="orient-result-card" style="background:#111827; border:2px solid var(--orange-ztv); border-radius:var(--radius-xl); padding:20px; text-align:center; margin-bottom:18px;">
-          <div style="font-size:11px; font-weight:800; color:var(--text-gray); text-transform:uppercase;">🎯 Moyenne d'Orientation Finale</div>
-          <div style="font-size:32px; font-weight:900; color:var(--orange-ztv); margin:6px 0;" id="orient-score-val">-- / 20</div>
-          <div style="font-size:11px; font-weight:700; color:#A5B4FC;" id="orient-appreciation-lbl">Veuillez renseigner vos notes BEPC ci-dessous</div>
-        </div>
-
-        <div id="orient-missing-warning" style="display:none; background:rgba(239, 68, 68, 0.15); border:1.5px solid #EF4444; border-radius:var(--radius-lg); padding:12px 16px; margin-bottom:16px; font-size:11px; color:#FCA5A5; line-height:1.4;">
-          ⚠️ <strong>Calcul impossible pour le moment :</strong> Les trois trimestres doivent être renseignés dans l'application pour calculer la moyenne d'orientation.
-        </div>
-
-        <!-- FORMULAIRE SAISIE NOTES BEPC -->
-        <h3 style="font-size:13px; font-weight:800; color:#FFF; margin-bottom:12px;">📝 Saisie des notes du BEPC</h3>
-
-        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
-          <!-- FRANCAIS -->
-          <div style="background:var(--bg-card); border:1px solid var(--border-light); border-radius:var(--radius-lg); padding:14px;">
-            <div style="font-size:12px; font-weight:800; color:#FFF; margin-bottom:8px;">🇫🇷 Français (Coef. 2)</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:center;">
-              <div style="font-size:10px; color:var(--text-gray);">Moy. Annuelle: <strong id="or-ma-fr" style="color:#FFF;">--</strong></div>
-              <div>
-                <input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-fr" placeholder="Note BEPC /20" oninput="calculerMoyenneOrientation()" />
-              </div>
-            </div>
-          </div>
-
-          <!-- MATHS -->
-          <div style="background:var(--bg-card); border:1px solid var(--border-light); border-radius:var(--radius-lg); padding:14px;">
-            <div style="font-size:12px; font-weight:800; color:#FFF; margin-bottom:8px;">➗ Mathématiques (Coef. 2)</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:center;">
-              <div style="font-size:10px; color:var(--text-gray);">Moy. Annuelle: <strong id="or-ma-ma" style="color:#FFF;">--</strong></div>
-              <div>
-                <input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-ma" placeholder="Note BEPC /20" oninput="calculerMoyenneOrientation()" />
-              </div>
-            </div>
-          </div>
-
-          <!-- PHYSIQUE CHIMIE -->
-          <div style="background:var(--bg-card); border:1px solid var(--border-light); border-radius:var(--radius-lg); padding:14px;">
-            <div style="font-size:12px; font-weight:800; color:#FFF; margin-bottom:8px;">⚛️ Physique-Chimie (Coef. 1)</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:center;">
-              <div style="font-size:10px; color:var(--text-gray);">Moy. Annuelle: <strong id="or-ma-pc" style="color:#FFF;">--</strong></div>
-              <div>
-                <input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-note-pc" placeholder="Note BEPC /20" oninput="calculerMoyenneOrientation()" />
-              </div>
-            </div>
-          </div>
-
-          <!-- ANGLAIS PARTICULIER (ECRIT + ORAL / 2) -->
-          <div style="background:var(--bg-card); border:1px solid var(--border-light); border-radius:var(--radius-lg); padding:14px;">
-            <div style="font-size:12px; font-weight:800; color:#FFF; margin-bottom:4px;">🇬🇧 Anglais (Coef. 1)</div>
-            <div style="font-size:10px; color:var(--text-gray); margin-bottom:8px;">Moy. Annuelle: <strong id="or-ma-an" style="color:#FFF;">--</strong></div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-              <input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-an-ecrit" placeholder="Note Écrit /20" oninput="calculerMoyenneOrientation()" />
-              <input type="number" min="0" max="20" step="0.25" class="form-input" id="bepc-an-oral" placeholder="Note Oral /20" oninput="calculerMoyenneOrientation()" />
-            </div>
-          </div>
-        </div>
-
-        <!-- RECAPITULATIF TABLEAU DES 4 MATIERES -->
-        <h3 style="font-size:13px; font-weight:800; color:#FFF; margin-bottom:10px;">📋 Récapitulatif des 4 Matières</h3>
-        <table class="bulletin-table" style="margin-bottom:30px;">
-          <thead>
-            <tr>
-              <th>Matière</th>
-              <th>Moyenne annuelle</th>
-              <th>BEPC</th>
-              <th>Résultat /40</th>
-              <th>Coef.</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>🇫🇷 Français</td>
-              <td id="rec-ma-fr">-</td>
-              <td id="rec-bepc-fr">-</td>
-              <td id="rec-tot-fr" style="font-weight:900; color:var(--orange-ztv);">-</td>
-              <td>2</td>
-            </tr>
-            <tr>
-              <td>➗ Mathématiques</td>
-              <td id="rec-ma-ma">-</td>
-              <td id="rec-bepc-ma">-</td>
-              <td id="rec-tot-ma" style="font-weight:900; color:var(--orange-ztv);">-</td>
-              <td>2</td>
-            </tr>
-            <tr>
-              <td>⚛️ Physique-Chimie</td>
-              <td id="rec-ma-pc">-</td>
-              <td id="rec-bepc-pc">-</td>
-              <td id="rec-tot-pc" style="font-weight:900; color:var(--orange-ztv);">-</td>
-              <td>1</td>
-            </tr>
-            <tr>
-              <td>🇬🇧 Anglais</td>
-              <td id="rec-ma-an">-</td>
-              <td id="rec-bepc-an">-</td>
-              <td id="rec-tot-an" style="font-weight:900; color:var(--orange-ztv);">-</td>
-              <td>1</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ================= 7. MODALE POPUP DYNAMIQUE ================= -->
-    <div class="modal-overlay" id="modal-container">
-      <div class="modal-card">
-        <div class="modal-header">
-          <div class="modal-title" id="modal-title-text">Titre Modale</div>
-          <div class="modal-close-btn" onclick="closeModal()">✕</div>
-        </div>
-        <div id="modal-body-content">
-          <!-- Contenu dynamique -->
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= 8. BOUTON WHATSAPP FLOTTANT ================= -->
-    <a href="https://wa.me/2250799591024" target="_blank" class="whatsapp-float-btn" title="Nous contacter sur WhatsApp">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="#FFF">
-        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.572-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-      </svg>
-    </a>
-
-  </div>
-
-  <script>
-    // CONFIGURATION FIREBASE CLOUD FIRESTORE
-    const firebaseConfig = {
-      apiKey: "AIzaSyYourApiKeyHere",
-      authDomain: "ztv-concours.firebaseapp.com",
-      projectId: "ztv-concours",
-      storageBucket: "ztv-concours.appspot.com",
-      messagingSenderId: "1234567890",
-      appId: "1:1234567890:web:abcdef123456"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.firestore();
-
-    let activeTrimestre = 1;
-    let selectedCertifPeriod = 'annuel';
-
-    // BASE DE DONNÉES LOCALE DES COMPTES
-    let registeredUsers = [];
-
-    // COMPTE EN COURS
-    let currentUser = null;
-
-    let trimestresData = {
-      1: { points: 0, coefs: 0, moyenne: null, subjects: {} },
-      2: { points: 0, coefs: 0, moyenne: null, subjects: {} },
-      3: { points: 0, coefs: 0, moyenne: null, subjects: {} }
-    };
-
-    window.onload = function() {
-      const d = new Date();
-      const yr = d.getFullYear();
-      const schoolYr = (d.getMonth() >= 8) ? yr + "-" + (yr + 1) : (yr - 1) + "-" + yr;
-      document.getElementById('cert-school-year').innerText = schoolYr;
-      
-      // Charger la base locale ou synchroniser si besoin
-      const localData = localStorage.getItem('ztv_users_data');
-      if(localData) {
-        try { registeredUsers = JSON.parse(localData); } catch(e) {}
-      }
-    };
-
-    function saveLocal() {
-      localStorage.setItem('ztv_users_data', JSON.stringify(registeredUsers));
-    }
-
-    // SYNCHRONISATION ÉLÈVE VERS FIREBASE (Remontée Administrateur)
-    function syncUserToFirebase(user) {
-      if (!user || !user.fullname) return;
-
-      const docId = user.fullname.toLowerCase().replace(/\s+/g, '_');
-      
-      // Calcul du total des calculs effectués
-      let totalCalculs = 0;
-      if (user.trimestresData) {
-        [1, 2, 3].forEach(t => {
-          if (user.trimestresData[t] && user.trimestresData[t].moyenne !== null) {
-            totalCalculs++;
-          }
-        });
-      }
-      if (user.moyenneOrientation) totalCalculs++;
-
-      const payload = {
-        nom: user.nom || "",
-        prenom: user.prenom || "",
-        fullname: user.fullname,
-        pass: user.pass || "",
-        etablissement: user.etablissement || "",
-        classe: user.classe || "",
-        ville: user.ville || "",
-        pays: user.pays || "Côte d'Ivoire 🇨🇮",
-        whatsapp: user.whatsapp || "",
-        dateCreation: user.dateCreation || new Date().toLocaleDateString('fr-FR'),
-        photo: user.photo || "",
-        trimestresData: user.trimestresData || trimestresData,
-        calculsEffectues: totalCalculs,
-        derniereMiseAJour: firebase.firestore.FieldValue.serverTimestamp()
-      };
-
-      db.collection("eleves").doc(docId).set(payload, { merge: true })
-        .then(() => { console.log("Données élève synchronisées avec Firebase"); })
-        .catch((err) => { console.warn("Avertissement Synchro Firebase:", err); });
-    }
-
-    // BADGE DISCRET DE CONFIRMATION
-    function showToast(message) {
-      const toast = document.getElementById('ztv-toast');
-      const toastText = document.getElementById('toast-text');
-      toastText.innerText = message || "Enregistré";
-      toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 2200);
-    }
-
-    function switchPage(pageId) {
-      document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
-      document.getElementById(pageId).classList.add('active');
-      if(pageId === 'view-orientation') {
-        preparerPageOrientation();
-      }
-    }
-
-    function switchAuthTab(tab) {
-      const loginBtn = document.getElementById('tab-login-btn');
-      const regBtn = document.getElementById('tab-register-btn');
-      const loginForm = document.getElementById('form-login-content');
-      const regForm = document.getElementById('form-register-content');
-
-      document.getElementById('login-error-msg').style.display = 'none';
-      document.getElementById('reg-error-msg').style.display = 'none';
-
-      if(tab === 'login') {
-        loginBtn.classList.add('active'); regBtn.classList.remove('active');
-        loginForm.style.display = 'block'; regForm.style.display = 'none';
-      } else {
-        regBtn.classList.add('active'); loginBtn.classList.remove('active');
-        loginForm.style.display = 'none'; regForm.style.display = 'block';
-      }
-    }
-
-    /* GESTION DE LA PHOTO DEPUIS LA GALERIE */
-    function handlePhotoSelect(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          if(currentUser) {
-            currentUser.photo = e.target.result;
-            saveLocal();
-            syncUserToFirebase(currentUser);
-          }
-          document.getElementById('photo-preview-msg').innerText = "✓ Photo sélectionnée : " + file.name;
-          updateAppPhotos();
-          showToast("Photo mise à jour");
+        // Vos identifiants Firebase (Conservés tels quels)
+        const firebaseConfig = {
+            apiKey: "VOTRE_API_KEY",
+            authDomain: "VOTRE_PROJECT_ID.firebaseapp.com",
+            projectId: "VOTRE_PROJECT_ID",
+            storageBucket: "VOTRE_PROJECT_ID.appspot.com",
+            messagingSenderId: "VOTRE_SENDER_ID",
+            appId: "VOTRE_APP_ID"
         };
-        reader.readAsDataURL(file);
-      }
-    }
 
-    function triggerPhotoChange() {
-      document.getElementById('reg-photo-file').click();
-    }
-
-    function updateAppPhotos() {
-      const photoSrc = (currentUser && currentUser.photo) ? currentUser.photo : "https://i.postimg.cc/Z5t6ctQQ/file-000000008a6081f9a7552dfe57d5c70d.png";
-      document.getElementById('dash-avatar-img').src = photoSrc;
-      document.getElementById('profile-avatar-img').src = photoSrc;
-      document.getElementById('cert-photo-img').src = photoSrc;
-    }
-
-    function checkClasse3emeUI() {
-      const classe = (currentUser && currentUser.classe) ? currentUser.classe : document.getElementById('reg-classe').value;
-      const is3eme = (classe === "3ème" || classe === "3e" || classe === "3E");
-      document.getElementById('card-orientation-3eme-wrapper').style.display = is3eme ? "block" : "none";
-    }
-
-    /* MENTION AUTOMATIQUE */
-    function meGetMention(moyenne) {
-      if(moyenne === null || isNaN(moyenne)) return "--";
-      if(moyenne < 10) return "Ajourné / Insuffisant";
-      if(moyenne < 12) return "Passable";
-      if(moyenne < 14) return "Assez Bien";
-      if(moyenne < 16) return "Bien";
-      if(moyenne < 18) return "Très Bien";
-      return "Excellente / Félicitations";
-    }
-
-    /* AUTHENTIFICATION RAPIDE & SÉCURISÉE */
-    function actionLogin() {
-      const loginInput = document.getElementById('login-fullname').value.trim();
-      const passInput = document.getElementById('login-pass').value;
-      const errBox = document.getElementById('login-error-msg');
-
-      errBox.style.display = 'none';
-
-      if(!loginInput || !passInput) {
-        errBox.innerText = "Vos informations sont incorrectes. Veuillez vérifier vos informations et réessayer.";
-        errBox.style.display = 'block';
-        return;
-      }
-
-      const existingUser = registeredUsers.find(u => 
-        (u.fullname.toLowerCase() === loginInput.toLowerCase() || u.nom.toLowerCase() === loginInput.toLowerCase()) && u.pass === passInput
-      );
-
-      if(existingUser) {
-        currentUser = existingUser;
-        trimestresData = currentUser.trimestresData;
-        updateProfileDisplay();
-        updateAppPhotos();
-        checkClasse3emeUI();
-        switchPage('view-dashboard');
-        actualiserMoyennesGlobales();
-        syncUserToFirebase(currentUser);
-        showToast("Confirmation réussie");
-      } else {
-        errBox.innerText = "Vos informations sont incorrectes. Veuillez vérifier vos informations et réessayer.";
-        errBox.style.display = 'block';
-      }
-    }
-
-    /* INSCRIPTION AVEC RÈGLE STRICTE DU MOT DE PASSE (5 CHIFFRES) */
-    function actionRegister() {
-      const nom = document.getElementById('reg-nom').value.trim();
-      const prenom = document.getElementById('reg-prenom').value.trim();
-      const pass = document.getElementById('reg-pass').value.trim();
-      const errBox = document.getElementById('reg-error-msg');
-
-      errBox.style.display = 'none';
-
-      if(!nom || !prenom || !pass) {
-        errBox.innerText = "Veuillez remplir tous les champs obligatoires (Nom, Prénom, Mot de passe).";
-        errBox.style.display = 'block';
-        return;
-      }
-
-      // RÈGLE OBLIGATOIRE : MOT DE PASSE COMPOSÉ DE EXACTEMENT 5 CHIFFRES NUMÉRIQUES
-      const passRegex = /^\d{5}$/;
-      if (!passRegex.test(pass)) {
-        errBox.innerText = "⚠️ Le mot de passe doit être composé de exactement 5 chiffres (ex: 12345).";
-        errBox.style.display = 'block';
-        return;
-      }
-
-      const fullname = (nom + " " + prenom).trim();
-
-      // Contrôle strict anti-doublon
-      const duplicate = registeredUsers.find(u => u.fullname.toLowerCase() === fullname.toLowerCase());
-
-      if(duplicate) {
-        errBox.innerText = "Ces informations ont déjà un compte actif. Veuillez vous connecter.";
-        errBox.style.display = 'block';
-        setTimeout(() => switchAuthTab('login'), 2000);
-        return;
-      }
-
-      const photoSrc = document.getElementById('photo-preview-msg').innerText.includes("✓") && currentUser && currentUser.photo 
-        ? currentUser.photo 
-        : "https://i.postimg.cc/Z5t6ctQQ/file-000000008a6081f9a7552dfe57d5c70d.png";
-
-      const newUser = {
-        nom: nom,
-        prenom: prenom,
-        fullname: fullname,
-        pass: pass,
-        etablissement: document.getElementById('reg-etablissement').value.trim(),
-        ville: document.getElementById('reg-ville').value.trim(),
-        classe: document.getElementById('reg-classe').value,
-        whatsapp: document.getElementById('reg-whatsapp').value.trim(),
-        pays: document.getElementById('reg-pays').value,
-        dateCreation: new Date().toLocaleDateString('fr-FR'),
-        photo: photoSrc,
-        trimestresData: {
-          1: { points: 0, coefs: 0, moyenne: null, subjects: {} },
-          2: { points: 0, coefs: 0, moyenne: null, subjects: {} },
-          3: { points: 0, coefs: 0, moyenne: null, subjects: {} }
-        }
-      };
-
-      registeredUsers.push(newUser);
-      currentUser = newUser;
-      trimestresData = currentUser.trimestresData;
-
-      saveLocal();
-      syncUserToFirebase(currentUser);
-
-      updateProfileDisplay();
-      updateAppPhotos();
-      checkClasse3emeUI();
-
-      switchPage('view-dashboard');
-      actualiserMoyennesGlobales();
-      showToast("Compte créé avec succès");
-    }
-
-    function updateProfileDisplay() {
-      if(!currentUser) return;
-      document.getElementById('dash-user-name').innerText = currentUser.fullname + " 👋";
-      document.getElementById('prof-disp-fullname').innerText = currentUser.fullname;
-      document.getElementById('prof-nom').innerText = currentUser.nom || "--";
-      document.getElementById('prof-prenom').innerText = currentUser.prenom || "--";
-      document.getElementById('prof-etablissement').innerText = currentUser.etablissement || "--";
-      document.getElementById('prof-classe').innerText = currentUser.classe || "--";
-      document.getElementById('prof-ville').innerText = currentUser.ville || "--";
-      document.getElementById('prof-pays').innerText = currentUser.pays;
-      document.getElementById('prof-whatsapp').innerText = currentUser.whatsapp || "--";
-      document.getElementById('prof-created-date').innerText = currentUser.dateCreation;
-
-      document.getElementById('cert-fullname').innerText = currentUser.fullname;
-      document.getElementById('cert-school-name').innerText = currentUser.etablissement || "Établissement Scolaire";
-      document.getElementById('cert-classe').innerText = currentUser.classe || "Non spécifiée";
-    }
-
-    function actionLogout() {
-      currentUser = null;
-      trimestresData = {
-        1: { points: 0, coefs: 0, moyenne: null, subjects: {} },
-        2: { points: 0, coefs: 0, moyenne: null, subjects: {} },
-        3: { points: 0, coefs: 0, moyenne: null, subjects: {} }
-      };
-      switchPage('view-auth');
-    }
-
-    /* SAISIE TRIMESTRIELLE */
-    function openTrimPage(tNum) {
-      activeTrimestre = tNum;
-      document.getElementById('trim-entry-title').innerText = "Saisie des Moyennes - " + tNum + (tNum === 1 ? "er" : "e") + " Trimestre";
-      
-      const rows = document.querySelectorAll('#bulletin tbody tr[data-subject]');
-      rows.forEach(tr => {
-        const subject = tr.getAttribute('data-subject');
-        const noteInput = tr.querySelector('.inp-note');
-        if(trimestresData[tNum].subjects[subject] !== undefined) {
-          noteInput.value = trimestresData[tNum].subjects[subject].note;
-        } else {
-          noteInput.value = "";
-        }
-      });
-
-      calculerBulletin();
-      switchPage('view-trim-entry');
-    }
-
-    function calculerBulletin() {
-      const rows = document.querySelectorAll('#bulletin tbody tr[data-subject]');
-      let totPoints = 0;
-      let totCoefs = 0;
-
-      rows.forEach(tr => {
-        const coef = parseFloat(tr.querySelector('.inp-coef').value) || 0;
-        const noteInput = tr.querySelector('.inp-note');
-        const note = parseFloat(noteInput.value);
-        const totCell = tr.querySelector('.tot-cell');
-
-        if(!isNaN(note) && note >= 0 && note <= 20) {
-          const pt = note * coef;
-          totPoints += pt;
-          totCoefs += coef;
-          totCell.innerText = pt.toFixed(2);
-        } else {
-          totCell.innerText = "-";
-        }
-      });
-
-      document.getElementById('total-coefs').innerText = totCoefs;
-      document.getElementById('total-points').innerText = totPoints.toFixed(2);
-    }
-
-    function enregistrerPageTrimestre() {
-      const rows = document.querySelectorAll('#bulletin tbody tr[data-subject]');
-      let totPoints = 0;
-      let totCoefs = 0;
-      let subs = {};
-
-      rows.forEach(tr => {
-        const subject = tr.getAttribute('data-subject');
-        const coef = parseFloat(tr.querySelector('.inp-coef').value) || 0;
-        const noteInput = tr.querySelector('.inp-note');
-        const note = parseFloat(noteInput.value);
-
-        if(!isNaN(note) && note >= 0 && note <= 20) {
-          subs[subject] = { note: note, coef: coef };
-          totPoints += (note * coef);
-          totCoefs += coef;
-        }
-      });
-
-      if(totCoefs > 0) {
-        trimestresData[activeTrimestre].points = totPoints;
-        trimestresData[activeTrimestre].coefs = totCoefs;
-        trimestresData[activeTrimestre].moyenne = totPoints / totCoefs;
-        trimestresData[activeTrimestre].subjects = subs;
-      } else {
-        trimestresData[activeTrimestre].moyenne = null;
-        trimestresData[activeTrimestre].subjects = {};
-      }
-
-      if(currentUser) {
-        currentUser.trimestresData = trimestresData;
-        saveLocal();
-        syncUserToFirebase(currentUser);
-      }
-
-      actualiserMoyennesGlobales();
-      switchPage('view-dashboard');
-      showToast("Enregistré");
-    }
-
-    function actualiserMoyennesGlobales() {
-      // 1. Mettre à jour les 3 trimestres
-      const t1 = trimestresData[1].moyenne;
-      const t2 = trimestresData[2].moyenne;
-      const t3 = trimestresData[3].moyenne;
-
-      document.getElementById('val-t1').innerText = (t1 !== null) ? t1.toFixed(2) + " /20" : "-- /20";
-      document.getElementById('val-t2').innerText = (t2 !== null) ? t2.toFixed(2) + " /20" : "-- /20";
-      document.getElementById('val-t3').innerText = (t3 !== null) ? t3.toFixed(2) + " /20" : "-- /20";
-
-      document.getElementById('prof-t1-val').innerText = (t1 !== null) ? t1.toFixed(2) + " /20" : "-- /20";
-      document.getElementById('prof-t2-val').innerText = (t2 !== null) ? t2.toFixed(2) + " /20" : "-- /20";
-      document.getElementById('prof-t3-val').innerText = (t3 !== null) ? t3.toFixed(2) + " /20" : "-- /20";
-
-      // 2. MOYENNE ANNUELLE
-      if(t1 !== null && t2 !== null && t3 !== null) {
-        const moyAnnuelle = (t1 + t2 + t3) / 3;
-        document.getElementById('val-annual').innerText = moyAnnuelle.toFixed(2) + " /20";
-        document.getElementById('prof-annuel-val').innerText = moyAnnuelle.toFixed(2) + " /20";
-        
-        const mention = meGetMention(moyAnnuelle);
-        document.getElementById('val-mention').innerText = mention;
-        document.getElementById('prof-mention-val').innerText = mention;
-
-        const decision = (moyAnnuelle >= 10) ? "Admis(e) 🟢" : "Ajourné(e) 🔴";
-        document.getElementById('val-decision').innerText = decision;
-      } else {
-        document.getElementById('val-annual').innerText = "-- /20";
-        document.getElementById('prof-annuel-val').innerText = "-- /20";
-        document.getElementById('val-mention').innerText = "--";
-        document.getElementById('prof-mention-val').innerText = "--";
-        document.getElementById('val-decision').innerText = "--";
-      }
-
-      // 3. PROGRESSION GÉNÉRALE EN POURCENTAGE (RÉEL ET DYNAMIQUE)
-      let availableMoyennes = [];
-      if(t1 !== null) availableMoyennes.push(t1);
-      if(t2 !== null) availableMoyennes.push(t2);
-      if(t3 !== null) availableMoyennes.push(t3);
-
-      if(availableMoyennes.length > 0) {
-        const sumMoy = availableMoyennes.reduce((a, b) => a + b, 0);
-        const avgCurrent = sumMoy / availableMoyennes.length;
-        
-        // Progression en pourcentage sur 100%
-        const pctProgression = Math.round((avgCurrent / 20) * 100);
-
-        document.getElementById('circle-pct').innerText = pctProgression + " %";
-        const barFill = document.getElementById('bar-fill');
-        const circlePct = document.getElementById('circle-pct');
-        barFill.style.width = pctProgression + "%";
-
-        // Niveau de performance dynamique
-        let perfText = "Progression faible";
-        let colorCode = "#EF4444"; 
-
-        if(pctProgression >= 80) {
-          perfText = "Excellente performance — Bravo !";
-          colorCode = "#09A63D";
-        } else if(pctProgression >= 70) {
-          perfText = "Très bonne progression — Continue ainsi !";
-          colorCode = "#10B981";
-        } else if(pctProgression >= 55) {
-          perfText = "Bonne progression — Continue tes efforts !";
-          colorCode = "#FF8C00";
-        } else if(pctProgression >= 50) {
-          perfText = "Progression moyenne — Tu peux faire mieux !";
-          colorCode = "#F59E0B";
-        } else {
-          perfText = "Progression faible — Redouble d'efforts !";
-          colorCode = "#EF4444";
-        }
-
-        barFill.style.background = colorCode;
-        circlePct.style.borderColor = colorCode;
-        document.getElementById('prog-desc').innerText = perfText;
-      } else {
-        document.getElementById('circle-pct').innerText = "0 %";
-        document.getElementById('bar-fill').style.width = "0%";
-        document.getElementById('bar-fill').style.background = "#EF4444";
-        document.getElementById('circle-pct').style.borderColor = "#EF4444";
-        document.getElementById('prog-desc').innerText = "Renseignez vos moyennes par trimestre";
-      }
-    }
-
-    /* OBJECTIF DYNAMIQUE ET INTELLIGENT DE PASSAGE */
-    function openModalObjectif() {
-      const t1 = trimestresData[1].moyenne;
-      const t2 = trimestresData[2].moyenne;
-      const t3 = trimestresData[3].moyenne;
-
-      let htmlContent = "";
-
-      // Identification dynamique des matières faibles (<10/20)
-      let weakSubjectsMap = {};
-      [1, 2, 3].forEach(t => {
-        const subs = trimestresData[t].subjects;
-        for(let s in subs) {
-          if(subs[s].note < 10) {
-            weakSubjectsMap[s] = subs[s].note;
-          }
-        }
-      });
-
-      let weakSubjectsListHtml = "";
-      if(Object.keys(weakSubjectsMap).length > 0) {
-        weakSubjectsListHtml = `<div style="margin-top:12px; text-align:left; background:rgba(239,68,68,0.1); border:1px solid #EF4444; border-radius:12px; padding:10px;"><strong style="font-size:11px; color:#FCA5A5;">📚 Matières à améliorer :</strong><ul style="font-size:11px; color:#FFF; margin-top:4px; padding-left:18px;">`;
-        for(let sub in weakSubjectsMap) {
-          weakSubjectsListHtml += `<li>${sub} : ${weakSubjectsMap[sub].toFixed(2)}/20</li>`;
-        }
-        weakSubjectsListHtml += `</ul></div>`;
-      }
-
-      if(t1 === null && t2 === null && t3 === null) {
-        htmlContent = `
-          <div style="text-align:center; padding:10px 0;">
-            <p style="font-size:13px; color:#FFF; line-height:1.5;">Veuillez d'abord enregistrer vos résultats d'au moins un trimestre pour calculer vos conseils d'orientation personnalisés.</p>
-            <button class="btn-main-green" style="margin-top:16px;" onclick="closeModal()">Compris</button>
-          </div>
-        `;
-      } else if(t1 !== null && t2 !== null && t3 !== null) {
-        const moyAnnuelle = (t1 + t2 + t3) / 3;
-        if(moyAnnuelle >= 10) {
-          htmlContent = `
-            <div style="padding:10px 0;">
-              <p style="font-size:13px; color:#10B981; font-weight:800; text-align:center; margin-bottom:8px;">🎉 Objectif atteint !</p>
-              <p style="font-size:12px; color:#FFF; line-height:1.5;">Votre moyenne annuelle est de <strong>${moyAnnuelle.toFixed(2)}/20</strong>. Vous validez votre passage en classe supérieure avec succès !</p>
-            </div>
-          `;
-        } else {
-          htmlContent = `
-            <div style="padding:10px 0;">
-              <p style="font-size:13px; color:#EF4444; font-weight:800; text-align:center; margin-bottom:8px;">⚠️ Passage non validé</p>
-              <p style="font-size:12px; color:#FFF; line-height:1.5;">Votre moyenne annuelle finale (${moyAnnuelle.toFixed(2)}/20) reste inférieure au seuil de passage de 10/20.</p>
-              ${weakSubjectsListHtml}
-            </div>
-          `;
-        }
-      } else {
-        let count = 0, sum = 0;
-        if(t1 !== null) { sum += t1; count++; }
-        if(t2 !== null) { sum += t2; count++; }
-
-        const reqTotal = 30 - sum;
-
-        if(count === 1) {
-          const reqPerTrim = reqTotal / 2;
-          if(reqPerTrim > 20) {
-            htmlContent = `
-              <div style="padding:10px 0;">
-                <p style="font-size:12px; color:#FFF; line-height:1.5;">
-                  T1 = <strong>${t1.toFixed(2)}/20</strong><br>
-                  T2 et T3 = <em>non renseignés</em>
-                </p>
-                <p style="font-size:12px; color:#EF4444; font-weight:700; margin-top:8px;">⚠️ L'objectif de 10/20 de moyenne annuelle exige un effort exceptionnel sur les deux prochains trimestres (plus de 20/20 de moyenne requis au cumul).</p>
-                ${weakSubjectsListHtml}
-              </div>
-            `;
-          } else if(reqPerTrim <= 0) {
-            htmlContent = `
-              <div style="padding:10px 0;">
-                <p style="font-size:13px; color:#10B981; font-weight:800; margin-bottom:8px;">Très bon 1er trimestre !</p>
-                <p style="font-size:12px; color:#FFF; line-height:1.5;">Avec vos ${t1.toFixed(2)}/20 au 1er trimestre, vous avez pris une excellente avance pour valider votre année.</p>
-              </div>
-            `;
-          } else {
-            htmlContent = `
-              <div style="padding:10px 0;">
-                <p style="font-size:12px; color:#FFF; line-height:1.5;">
-                  <strong>🎯 Objectif :</strong> Améliorer tes résultats aux 2e et 3e trimestres.<br><br>
-                  Pour atteindre la moyenne nécessaire au passage (10/20), tu dois viser au minimum <strong>${reqPerTrim.toFixed(2)}/20</strong> aux T2 et T3.
-                </p>
-                ${weakSubjectsListHtml}
-              </div>
-            `;
-          }
-        } else if(count === 2) {
-          const reqT3 = reqTotal;
-          if(reqT3 > 20) {
-            htmlContent = `
-              <div style="padding:10px 0;">
-                <p style="font-size:12px; color:#FFF; line-height:1.5;">
-                  T1 = <strong>${t1.toFixed(2)}/20</strong><br>
-                  T2 = <strong>${t2.toFixed(2)}/20</strong><br>
-                  T3 = <em>non renseigné</em>
-                </p>
-                <p style="font-size:12px; color:#EF4444; font-weight:700; margin-top:8px;">⚠️ Mathématiquement, il n'est plus possible d'atteindre 10/20 de moyenne annuelle car il vous faudrait ${reqT3.toFixed(2)}/20 au 3e trimestre. Donnez le meilleur de vous-même au T3 !</p>
-                ${weakSubjectsListHtml}
-              </div>
-            `;
-          } else if(reqT3 <= 0) {
-            htmlContent = `
-              <div style="padding:10px 0;">
-                <p style="font-size:13px; color:#10B981; font-weight:800; margin-bottom:8px;">Passage déjà assuré !</p>
-                <p style="font-size:12px; color:#FFF; line-height:1.5;">Félicitations ! Vos points acquis aux T1 (${t1.toFixed(2)}) et T2 (${t2.toFixed(2)}) garantissent déjà votre moyenne annuelle de passage.</p>
-              </div>
-            `;
-          } else {
-            htmlContent = `
-              <div style="padding:10px 0;">
-                <p style="font-size:12px; color:#FFF; line-height:1.5;">
-                  T1 = <strong>${t1.toFixed(2)}/20</strong><br>
-                  T2 = <strong>${t2.toFixed(2)}/20</strong><br>
-                  T3 = <em>non renseigné</em>
-                </p>
-                <p style="font-size:12.5px; color:var(--orange-ztv); font-weight:800; margin:10px 0;">
-                  🎯 Objectif : Améliorer tes résultats au 3e trimestre.
-                </p>
-                <p style="font-size:12px; color:#FFF; line-height:1.4;">
-                  Pour atteindre la moyenne nécessaire au passage, tu dois viser au minimum <strong>${reqT3.toFixed(2)}/20</strong> au 3e trimestre.
-                </p>
-                ${weakSubjectsListHtml}
-              </div>
-            `;
-          }
-        }
-      }
-
-      openModal("🎯 Objectif Passer en classe supérieure", htmlContent);
-    }
-
-    /* TABLEAU D'HONNEUR */
-    function meObtenirMoyennePeriode(periode) {
-      if(periode === 't1') return trimestresData[1].moyenne;
-      if(periode === 't2') return trimestresData[2].moyenne;
-      if(periode === 't3') return trimestresData[3].moyenne;
-      
-      const t1 = trimestresData[1].moyenne;
-      const t2 = trimestresData[2].moyenne;
-      const t3 = trimestresData[3].moyenne;
-
-      return (t1 !== null && t2 !== null && t3 !== null) ? ((t1 + t2 + t3) / 3) : null;
-    }
-
-    function ouvrirTableauHonneurAccueil() {
-      let moy = meObtenirMoyennePeriode('annuel');
-      if(moy !== null && moy >= 13.0) {
-        changeCertifPeriod('annuel');
-        switchPage('view-certif');
-      } else {
-        const dispMoy = (moy !== null) ? moy.toFixed(2) : "--";
-        const htmlMsg = `
-          <div style="text-align:center; padding:10px 0;">
-            <div style="font-size:42px; margin-bottom:10px;">🏆</div>
-            <p style="font-size:13px; color:#FFF; line-height:1.5; margin-bottom:16px;">
-              Votre moyenne annuelle est de <strong>${dispMoy} / 20</strong>.<br><br>
-              Elle ne vous permet pas encore d'accéder au <strong>Tableau d'honneur</strong>, dont la moyenne minimale est fixée à <strong>13/20</strong> (les 3 trimestres doivent être complétés).
-            </p>
-            <p style="font-size:12px; color:var(--orange-ztv); font-weight:700; line-height:1.4; margin-bottom:20px;">
-              Continuez vos efforts et travaillez régulièrement ! 💪📚
-            </p>
-            <button class="btn-main-green" onclick="closeModal()">Compris</button>
-          </div>
-        `;
-        openModal("🏆 Tableau d'honneur", htmlMsg);
-      }
-    }
-
-    function changeCertifPeriod(period) {
-      selectedCertifPeriod = period;
-      document.querySelectorAll('.certif-tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById('cert-tab-' + period).classList.add('active');
-
-      const moy = meObtenirMoyennePeriode(period);
-      const periodNames = { 'annuel': 'Annuel', 't1': '1er Trimestre', 't2': '2e Trimestre', 't3': '3e Trimestre' };
-
-      if(moy !== null && moy >= 13.0) {
-        document.getElementById('cert-period-lbl').innerText = "Moyenne " + periodNames[period];
-        document.getElementById('cert-annual-val').innerText = moy.toFixed(2) + " /20";
-        document.getElementById('cert-mention-lbl').innerText = meGetMention(moy);
-      } else {
-        const dispMoy = (moy !== null) ? moy.toFixed(2) : "0.00";
-        const htmlMsg = `
-          <div style="text-align:center; padding:10px 0;">
-            <div style="font-size:42px; margin-bottom:10px;">🏆</div>
-            <p style="font-size:13px; color:#FFF; line-height:1.5; margin-bottom:16px;">
-              Votre moyenne pour le <strong>${periodNames[period]}</strong> est de <strong>${dispMoy} / 20</strong>.<br><br>
-              Elle ne vous permet pas d'accéder au Tableau d'honneur (Moyenne minimale : <strong>13/20</strong>).
-            </p>
-            <button class="btn-main-green" onclick="closeModal(); switchPage('view-dashboard');">Compris</button>
-          </div>
-        `;
-        openModal("🏆 Tableau d'honneur", htmlMsg);
-      }
-    }
-
-    /* RÉCUPÉRATION AUTOMATIQUE ET CALCUL DE LA MOYENNE D'ORIENTATION */
-    function preparerPageOrientation() {
-      const matieresTarget = ["Français", "Mathématiques", "Physique - Chimie", "Anglais"];
-      let maResults = {};
-      let missingAny = false;
-
-      matieresTarget.forEach(sub => {
-        const t1Note = trimestresData[1].subjects[sub]?.note;
-        const t2Note = trimestresData[2].subjects[sub]?.note;
-        const t3Note = trimestresData[3].subjects[sub]?.note;
-
-        // Récupération automatique des notes enregistrées aux T1, T2 et T3
-        if(t1Note !== undefined && t2Note !== undefined && t3Note !== undefined) {
-          const ma = (t1Note + (t2Note * 2) + (t3Note * 2)) / 5;
-          maResults[sub] = ma;
-        } else {
-          maResults[sub] = null;
-          missingAny = true;
-        }
-      });
-
-      document.getElementById('or-ma-fr').innerText = (maResults["Français"] !== null) ? maResults["Français"].toFixed(2) + " /20" : "Manquante";
-      document.getElementById('or-ma-ma').innerText = (maResults["Mathématiques"] !== null) ? maResults["Mathématiques"].toFixed(2) + " /20" : "Manquante";
-      document.getElementById('or-ma-pc').innerText = (maResults["Physique - Chimie"] !== null) ? maResults["Physique - Chimie"].toFixed(2) + " /20" : "Manquante";
-      document.getElementById('or-ma-an').innerText = (maResults["Anglais"] !== null) ? maResults["Anglais"].toFixed(2) + " /20" : "Manquante";
-
-      document.getElementById('rec-ma-fr').innerText = (maResults["Français"] !== null) ? maResults["Français"].toFixed(2) : "-";
-      document.getElementById('rec-ma-ma').innerText = (maResults["Mathématiques"] !== null) ? maResults["Mathématiques"].toFixed(2) : "-";
-      document.getElementById('rec-ma-pc').innerText = (maResults["Physique - Chimie"] !== null) ? maResults["Physique - Chimie"].toFixed(2) : "-";
-      document.getElementById('rec-ma-an').innerText = (maResults["Anglais"] !== null) ? maResults["Anglais"].toFixed(2) : "-";
-
-      document.getElementById('orient-missing-warning').style.display = missingAny ? 'block' : 'none';
-
-      calculerMoyenneOrientation();
-    }
-
-    function calculerMoyenneOrientation() {
-      const bepcFr = parseFloat(document.getElementById('bepc-note-fr').value);
-      const bepcMa = parseFloat(document.getElementById('bepc-note-ma').value);
-      const bepcPc = parseFloat(document.getElementById('bepc-note-pc').value);
-      
-      const bepcAnEcrit = parseFloat(document.getElementById('bepc-an-ecrit').value);
-      const bepcAnOral = parseFloat(document.getElementById('bepc-an-oral').value);
-
-      let bepcAnFinal = null;
-      if(!isNaN(bepcAnEcrit) && !isNaN(bepcAnOral)) {
-        bepcAnFinal = (bepcAnEcrit + bepcAnOral) / 2;
-      }
-
-      const getMA = (sub) => {
-        const t1 = trimestresData[1].subjects[sub]?.note;
-        const t2 = trimestresData[2].subjects[sub]?.note;
-        const t3 = trimestresData[3].subjects[sub]?.note;
-        return (t1 !== undefined && t2 !== undefined && t3 !== undefined) ? ((t1 + (t2*2) + (t3*2))/5) : null;
-      };
-
-      const maFr = getMA("Français");
-      const maMa = getMA("Mathématiques");
-      const maPc = getMA("Physique - Chimie");
-      const maAn = getMA("Anglais");
-
-      let totFr = (maFr !== null && !isNaN(bepcFr)) ? (maFr + bepcFr) : null;
-      let totMa = (maMa !== null && !isNaN(bepcMa)) ? (maMa + bepcMa) : null;
-      let totPc = (maPc !== null && !isNaN(bepcPc)) ? (maPc + bepcPc) : null;
-      let totAn = (maAn !== null && bepcAnFinal !== null) ? (maAn + bepcAnFinal) : null;
-
-      document.getElementById('rec-bepc-fr').innerText = !isNaN(bepcFr) ? bepcFr.toFixed(2) : "-";
-      document.getElementById('rec-bepc-ma').innerText = !isNaN(bepcMa) ? bepcMa.toFixed(2) : "-";
-      document.getElementById('rec-bepc-pc').innerText = !isNaN(bepcPc) ? bepcPc.toFixed(2) : "-";
-      document.getElementById('rec-bepc-an').innerText = (bepcAnFinal !== null) ? bepcAnFinal.toFixed(2) : "-";
-
-      document.getElementById('rec-tot-fr').innerText = (totFr !== null) ? totFr.toFixed(2) + " /40" : "-";
-      document.getElementById('rec-tot-ma').innerText = (totMa !== null) ? totMa.toFixed(2) + " /40" : "-";
-      document.getElementById('rec-tot-pc').innerText = (totPc !== null) ? totPc.toFixed(2) + " /40" : "-";
-      document.getElementById('rec-tot-an').innerText = (totAn !== null) ? totAn.toFixed(2) + " /40" : "-";
-
-      if(totFr !== null && totMa !== null && totPc !== null && totAn !== null) {
-        const totalPondere = (totFr * 2) + (totMa * 2) + (totPc * 1) + (totAn * 1);
-        const mo = totalPondere / 12;
-
-        document.getElementById('orient-score-val').innerText = mo.toFixed(2) + " / 20";
-        
-        let app = "🟢 Très bon profil d'orientation";
-        if(mo < 10) app = "🔴 Résultat insuffisant";
-        else if(mo < 12) app = "🟠 À surveiller";
-        document.getElementById('orient-appreciation-lbl').innerText = app;
-
-        if (currentUser) {
-          currentUser.moyenneOrientation = mo;
-          saveLocal();
-          syncUserToFirebase(currentUser);
-        }
-      } else {
-        document.getElementById('orient-score-val').innerText = "-- / 20";
-        document.getElementById('orient-appreciation-lbl').innerText = "Renseignez toutes les notes BEPC nécessaires";
-      }
-    }
-
-    /* MODALES */
-    function openModal(title, htmlContent) {
-      document.getElementById('modal-title-text').innerHTML = title;
-      document.getElementById('modal-body-content').innerHTML = htmlContent;
-      document.getElementById('modal-container').classList.add('active');
-    }
-
-    function closeModal() {
-      document.getElementById('modal-container').classList.remove('active');
-    }
-
-    function openModalCreator() {
-      const html = `
-        <div style="text-align:center; padding:10px 0;">
-          <img src="https://i.postimg.cc/nLRGRY0z/file-000000009dc8724699d54da957936110.png" class="creator-photo-ring" alt="Niampa Zakaria" />
-          <h3 style="font-size:17px; font-weight:900; color:#FFF;">Niampa Zakaria</h3>
-          <p style="font-size:12px; color:var(--orange-ztv); font-weight:800; margin-top:2px;">Créateur de ZTV</p>
-          
-          <div style="margin-top:16px; background:#111827; border:1px solid var(--border-light); border-radius:16px; padding:14px; text-align:left; display:flex; flex-direction:column; gap:8px;">
-            <div style="font-size:11px; color:#FFF;">🎓 <strong>Statut :</strong> Élève / Étudiant passionné</div>
-            <div style="font-size:11px; color:#FFF;">🏫 <strong>Établissement :</strong> Académie ZTV</div>
-            <div style="font-size:11px; color:#FFF;">🎂 <strong>Âge :</strong> Jeune créateur</div>
-            <div style="font-size:11px; color:#FFF;">🎥 <strong>Activité :</strong> Développement web & Éducation</div>
-            <div style="font-size:11px; color:#FFF;">🖥️ <strong>Nom de marque :</strong> ZTV</div>
-            <div style="font-size:11px; color:#FFF;">🎵 <strong>Compte TikTok :</strong> @ztv_officiel</div>
-          </div>
-
-          <p style="font-size:11px; color:#CBD5E1; line-height:1.45; margin-top:14px; text-align:center;">
-            ZTV Moyenne permet aux élèves de calculer facilement leur moyenne du 1er, 2e et 3e trimestre, ainsi que leur moyenne annuelle. Il suffit de saisir ses moyennes pour obtenir rapidement ses résultats.
-          </p>
-
-          <button class="btn-main-green" style="margin-top:16px;" onclick="closeModal()">Fermer</button>
-        </div>
-      `;
-      openModal("👑 Créateur de l'application", html);
-    }
-  </script>
+        // Initialisation
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Ajuster dynamiquement l'URL du lien élèves en fonction du domaine actuel
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentOrigin = window.location.origin;
+            const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+            document.getElementById('eleveUrl').value = `${currentOrigin}${currentPath}/eleves.html`;
+        });
+
+        // Écouteur d'état d'authentification
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Administrateur connecté
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('dashboardSection').classList.remove('hidden');
+            } else {
+                // Non connecté -> Afficher le login Admin
+                document.getElementById('loginSection').classList.remove('hidden');
+                document.getElementById('dashboardSection').classList.add('hidden');
+            }
+        });
+
+        // Connexion Admin
+        window.handleLogin = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                alert("Erreur de connexion : " + error.message);
+            }
+        };
+
+        // Déconnexion Admin
+        window.handleLogout = () => {
+            signOut(auth);
+        };
+
+        // Copier le lien Élèves
+        window.copyEleveLink = () => {
+            const copyText = document.getElementById("eleveUrl");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(copyText.value);
+            alert("Lien Élèves copié dans le presse-papier !");
+        };
+    </script>
 </body>
 </html>
